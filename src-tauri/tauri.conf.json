@@ -61,7 +61,7 @@
     "updater": {
       "active": true,
       "dialog": false,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDZERTQ3OTFEMzhDNTJEOUEKUldTYUxjVTRIWG5rYmFYak50OVBjTnBORHQ5TE5WeHJDMGNHbEJZdWxoa0RvbFEyUDVPSno1NTEK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDFCRTg4MUI4NTU4QzhBNzkKUldSNWlveFZ1SUhvRzBSSjY3anQ0YmdNQVdSMFZ2ZEtoQnpkUVplWDJybXVFMXpVOUxRc3JiUTgK",
       "endpoints": ["https://github.com/Tsounguinzo/Roam/releases/latest/download/latest.json"],
       "windows": {
         "installMode": "passive"
