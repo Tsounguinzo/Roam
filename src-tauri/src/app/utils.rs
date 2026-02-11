@@ -100,9 +100,14 @@ pub fn open_setting_window(app: tauri::AppHandle) {
         } else {
             Some(tauri::Theme::Light)
         })
-        .transparent(true)
-        //.title_bar_style(tauri::TitleBarStyle::Overlay)
-        .hidden_title(true)
+        .transparent(true);
+
+    #[cfg(target_os = "macos")]
+    {
+        builder = builder.hidden_title(true);
+    }
+
+    let _window = builder
         .build()
         .unwrap_or_else(|e| {
             log::error!("Failed to create setting window: {}", e);
