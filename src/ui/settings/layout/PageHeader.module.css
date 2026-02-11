@@ -1,0 +1,22 @@
+.title {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1.1 !important;
+}
+
+.description {
+    margin-top: 5px !important;
+    color: #9aa0a6 !important;
+    font-size: 1.2rem !important;
+    line-height: 1.45 !important;
+}
+
+.description a {
+    color: #8ec1ff;
+    text-decoration: none;
+}
+
+.description a:hover {
+    text-decoration: underline;
+}

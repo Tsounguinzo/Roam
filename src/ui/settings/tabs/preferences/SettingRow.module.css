@@ -1,0 +1,45 @@
+.row {
+    padding: 18px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.row:last-child {
+    border-bottom: none;
+}
+
+.body {
+    max-width: 620px;
+}
+
+.title {
+    color: #f1f3f8;
+    font-size: 1.12rem;
+    font-weight: 540;
+}
+
+.description {
+    color: #9ea4b3;
+    margin-top: 4px;
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+.extra {
+    margin-top: 14px;
+}
+
+:global([data-mantine-color-scheme="light"]) .row {
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+:global([data-mantine-color-scheme="light"]) .title {
+    color: #1c2230;
+}
+
+:global([data-mantine-color-scheme="light"]) .description {
+    color: #4a5568;
+}

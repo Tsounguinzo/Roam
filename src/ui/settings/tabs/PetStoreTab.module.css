@@ -1,0 +1,78 @@
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.toolbar {
+    width: 100%;
+}
+
+.searchInput {
+    width: min(360px, 100%);
+}
+
+.sectionTitle {
+    margin-top: 6px;
+    color: #edf0f7;
+    font-size: 1.7rem;
+    font-weight: 620;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.petCard {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    background: rgba(17, 20, 28, 0.92);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.petIcon {
+    width: 58px;
+    height: 58px;
+    border-radius: 13px;
+    object-fit: cover;
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.petMeta {
+    flex: 1;
+    min-width: 0;
+}
+
+.petName {
+    color: #f3f4f9;
+    font-size: 1.28rem;
+    font-weight: 560;
+    line-height: 1.2;
+}
+
+.petDescription {
+    color: #9ca3b3;
+    margin: 2px 0 10px;
+    font-size: 0.94rem;
+}
+
+.empty {
+    color: #9fa7b6;
+    font-size: 0.95rem;
+}
+
+.helper {
+    padding: 4px 2px 0;
+}
+
+@media (max-width: 1100px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}

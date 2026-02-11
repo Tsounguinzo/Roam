@@ -1,0 +1,72 @@
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.sectionTitle {
+    font-size: 2rem;
+    font-weight: 620;
+    color: #eef1f7;
+    letter-spacing: -0.02em;
+}
+
+.panel {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: rgba(19, 22, 30, 0.9);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.languageRow {
+    padding: 18px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.rowTitle {
+    color: #f1f3f8;
+    font-size: 1.12rem;
+    font-weight: 540;
+}
+
+.rowDescription {
+    color: #9ea4b3;
+    margin-top: 4px;
+    font-size: 0.92rem;
+}
+
+.languageSelect {
+    min-width: 230px;
+}
+
+@media (max-width: 860px) {
+    .languageRow {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .languageSelect {
+        min-width: 100%;
+        width: 100%;
+    }
+}
+
+:global([data-mantine-color-scheme="light"]) .sectionTitle {
+    color: #141823;
+}
+
+:global([data-mantine-color-scheme="light"]) .panel {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+:global([data-mantine-color-scheme="light"]) .rowTitle {
+    color: #1c2230;
+}
+
+:global([data-mantine-color-scheme="light"]) .rowDescription {
+    color: #4a5568;
+}
