@@ -1,4 +1,4 @@
-import { MemoExoticComponent } from "react";
+import { MemoExoticComponent, ReactElement } from "react";
 
 export interface IGetAppSetting {
     withErrorDialog?: boolean,
@@ -22,7 +22,7 @@ export enum SettingsTabId {
 }
 
 export interface SettingsTabDefinition {
-    Component: MemoExoticComponent<() => JSX.Element>,
+    Component: MemoExoticComponent<() => ReactElement>,
     title: string,
     description: string,
     Icon: React.ReactNode;

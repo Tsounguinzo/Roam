@@ -1,5 +1,6 @@
 .viewport {
     height: 100vh;
+    background: var(--mantine-color-dark-7, #141517);
 }
 
 .window {
@@ -46,6 +47,10 @@
     .mainScroll {
         padding: 28px 18px;
     }
+}
+
+:global([data-mantine-color-scheme="light"]) .viewport {
+    background: #f4f6fc;
 }
 
 :global([data-mantine-color-scheme="light"]) .sidebar {

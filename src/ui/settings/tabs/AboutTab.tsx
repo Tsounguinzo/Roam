@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Anchor, Flex, Text } from "@mantine/core";
-import { open } from "@tauri-apps/api/shell";
+import { open } from "@tauri-apps/plugin-shell";
 
 function AboutTab() {
     return (

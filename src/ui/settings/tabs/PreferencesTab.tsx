@@ -6,7 +6,7 @@ import { handleSettingChange } from "../../../utils/handleSettingChange";
 import { useSettingStore } from "../../../hooks/useSettingStore";
 import { memo, useCallback } from "react";
 import { IconLanguage } from "@tabler/icons-react";
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 import SettingActionRow from "./preferences/SettingActionRow";
 import { DispatchType } from "../../../types/IEvents";
 import { ColorSchemeType } from "../../../types/ISetting";

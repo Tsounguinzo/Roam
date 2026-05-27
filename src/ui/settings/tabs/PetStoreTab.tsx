@@ -12,8 +12,8 @@ import { PetCardType } from "../../../types/components/type";
 import { useSettingStore } from "../../../hooks/useSettingStore";
 import { DispatchType } from "../../../types/IEvents";
 import { ColorSchemeType, DefaultConfigName } from "../../../types/ISetting";
-import { invoke } from "@tauri-apps/api";
-import { WebviewWindow } from "@tauri-apps/api/window";
+import { invoke } from "@tauri-apps/api/core";
+import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { useDefaultPets } from "../../../hooks/usePets";
 
 function PetStoreTab() {
@@ -23,13 +23,13 @@ function PetStoreTab() {
     const [searchQuery, setSearchQuery] = useState("");
 
     const addPetToConfig = useCallback(async (pet: ISpriteConfig) => {
-        const userPetConfig = await getAppSettings({ configName: "pets.json" });
+        const userPetConfig = (await getAppSettings({ configName: "pets.json" })) ?? [];
         userPetConfig.push({ ...pet, id: crypto.randomUUID() });
 
         setConfig({ configName: "pets.json", newConfig: userPetConfig });
         setPets(userPetConfig);
 
-        if (!WebviewWindow.getByLabel('main')) await invoke("reopen_main_window");
+        if (!await WebviewWindow.getByLabel('main')) await invoke("reopen_main_window");
 
         notifications.show({
             message: t("pet name has been added to your realm", { name: pet.name }),

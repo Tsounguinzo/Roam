@@ -14,7 +14,7 @@ import { PetCardType } from "../../../types/components/type";
 import { DispatchType } from "../../../types/IEvents";
 import { ColorSchemeType } from "../../../types/ISetting";
 import { usePets } from "../../../hooks/usePets";
-import { invoke } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core";
 
 export function MyPetsTab() {
     const { refetch } = usePets();
@@ -24,7 +24,7 @@ export function MyPetsTab() {
     const [isFirstRemoval, setIsFirstRemoval] = useState(true);
 
     const removePet = useCallback(async (petId: string) => {
-        const userPetConfig = await getAppSettings({ configName: "pets.json" });
+        const userPetConfig = (await getAppSettings({ configName: "pets.json" })) ?? [];
         let removedPetName;
         const newConfig = userPetConfig.filter((pet: ISpriteConfig) => {
             if (pet.id === petId) removedPetName = pet.name;

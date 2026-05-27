@@ -12,7 +12,7 @@ import {
     ISwitchStateOptions,
     Ease,
 } from "../types/IPet";
-import { info, error } from "tauri-plugin-log-api";
+import { info, error } from "@tauri-apps/plugin-log";
 import defaultSettings from "../../src-tauri/src/app/default/settings.json";
 import { ConfigManager, InputManager } from "./manager";
 
@@ -101,6 +101,7 @@ export default class Pets extends Phaser.Scene {
         this.inputManager.turnOnIgnoreCursorEvents();
         this.physics.world.setBoundsCollision(true, true, true, true);
         this.updatePetAboveTaskbar();
+        this.scale.on(Phaser.Scale.Events.RESIZE, this.updatePetAboveTaskbar, this);
 
         // check all loaded sprite (debug only)
         // console.log(this.textures.list);
@@ -250,7 +251,7 @@ export default class Pets extends Phaser.Scene {
         // listen to setting change from setting window and update settings
         listen<any>(
             EventType.SettingWindowToPetOverlay,
-            (event: TRenderEventListener) => {
+            (event) => {
                 switch (event.payload.dispatchType) {
                     case DispatchType.SwitchAllowPetInteraction:
                         this.allowPetInteraction = event.payload
@@ -261,8 +262,8 @@ export default class Pets extends Phaser.Scene {
                             .value as boolean;
                         this.updatePetAboveTaskbar();
 
-                        // when the user switch from pet above taskbar to not above taskbar, there will be a little space for pet, we force pet to jump or play random state
-                        if (!this.allowPetAboveTaskbar) {
+                        // When pets are moved above the taskbar, pull them back into the smaller world.
+                        if (this.allowPetAboveTaskbar) {
                             this.pets.forEach((pet) => {
                                 this.petJumpOrPlayRandomState(pet);
                             });
@@ -691,28 +692,54 @@ export default class Pets extends Phaser.Scene {
         return pet.y <= this.getPetTopPosition(pet);
     }
 
-    updatePetAboveTaskbar(): void {
-        if (this.allowPetAboveTaskbar) {
-            // get taskbar height
-            const taskbarHeight =
-                window.screen.height - window.screen.availHeight;
+    getVisibleWorldSize(): { width: number; height: number } {
+        const width = Math.min(
+            this.scale.width || window.innerWidth,
+            window.innerWidth || window.screen.width,
+            window.screen.width
+        );
+        const screenHeight = this.allowPetAboveTaskbar
+            ? window.screen.availHeight
+            : window.screen.height;
+        const height = Math.min(
+            this.scale.height || window.innerHeight,
+            window.innerHeight || screenHeight,
+            screenHeight
+        );
 
-            // update world bounds to include task bar
-            this.physics.world.setBounds(
-                0,
-                0,
-                window.screen.width,
-                window.screen.height - taskbarHeight
+        return {
+            width: Math.max(1, width),
+            height: Math.max(1, height),
+        };
+    }
+
+    keepPetsInsideWorld(): void {
+        this.pets.forEach((pet) => {
+            pet.setPosition(
+                Phaser.Math.Clamp(
+                    pet.x,
+                    this.getPetLeftPosition(pet),
+                    this.getPetRightPosition(pet)
+                ),
+                Phaser.Math.Clamp(
+                    pet.y,
+                    this.getPetTopPosition(pet),
+                    this.getPetGroundPosition(pet)
+                )
             );
-            return;
-        }
+        });
+    }
+
+    updatePetAboveTaskbar(): void {
+        const { width, height } = this.getVisibleWorldSize();
 
         this.physics.world.setBounds(
             0,
             0,
-            window.screen.width,
-            window.screen.height
+            width,
+            height
         );
+        this.keepPetsInsideWorld();
     }
 
     petJumpOrPlayRandomState(pet: Pet): void {

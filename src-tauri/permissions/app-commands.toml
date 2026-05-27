@@ -1,0 +1,10 @@
+[[permission]]
+identifier = "allow-app-commands"
+description = "Enables custom Roam commands invoked from the frontend."
+commands.allow = [
+  "combine_config_path",
+  "convert_path",
+  "get_mouse_position",
+  "open_folder",
+  "reopen_main_window",
+]

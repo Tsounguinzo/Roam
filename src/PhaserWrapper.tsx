@@ -1,22 +1,20 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Phaser from "phaser";
 import Pets from "./scenes/Pets";
 import { useSettingStore } from "./hooks/useSettingStore";
-import { appWindow } from "@tauri-apps/api/window";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+const appWindow = getCurrentWebviewWindow()
 
 function PhaserWrapper() {
     const phaserDom = useRef<HTMLDivElement>(null);
+    const gameRef = useRef<Phaser.Game | null>(null);
     const { pets } = useSettingStore();
-
-    const [screenWidth, setScreenWidth] = useState(window.screen.width);
-    const [screenHeight, setScreenHeight] = useState(window.screen.height);
 
     useEffect(() => {
         if (!phaserDom.current) return;
 
         const handleResize = () => {
-            setScreenWidth(window.screen.width);
-            setScreenHeight(window.screen.height);
+            gameRef.current?.scale.resize(window.innerWidth, window.innerHeight);
         };
 
         window.addEventListener("resize", handleResize);
@@ -33,8 +31,8 @@ function PhaserWrapper() {
             antialias: true,
             scale: {
                 mode: Phaser.Scale.ScaleModes.RESIZE,
-                width: screenWidth,
-                height: screenHeight,
+                width: window.innerWidth,
+                height: window.innerHeight,
             },
             physics: {
                 default: 'arcade',
@@ -60,14 +58,16 @@ function PhaserWrapper() {
         }
 
         const game = new Phaser.Game(phaserConfig);
+        gameRef.current = game;
 
         return () => {
             game.destroy(true);
+            gameRef.current = null;
             if (phaserDom.current !== null) phaserDom.current.innerHTML = '';
             window.removeEventListener("resize", handleResize);
         }
 
-    }, [pets, screenWidth, screenHeight]);
+    }, [pets]);
 
     return <div ref={phaserDom} />;
 }

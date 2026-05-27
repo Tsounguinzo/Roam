@@ -2,13 +2,14 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import React, { Suspense } from "react";
 import Loading from "./Loading";
 import { useSettings } from "./hooks/useSettings";
-import { appWindow } from "@tauri-apps/api/window";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { useDefaultPets, usePets } from "./hooks/usePets";
-import { confirm } from "@tauri-apps/api/dialog";
+import { confirm } from "@tauri-apps/plugin-dialog";
 import { MantineProvider } from "@mantine/core";
 import { PrimaryColor } from "./utils";
 import { ColorSchemeType } from "./types/ISetting";
 import { useSettingStore } from "./hooks/useSettingStore";
+const appWindow = getCurrentWebviewWindow()
 
 const PhaserWrapper = React.lazy(() => import("./PhaserWrapper"));
 const SettingsWindow = React.lazy(() => import("./SettingsWindow"));
@@ -22,7 +23,7 @@ function App() {
   if (isError) {
     confirm(`Error: ${error.message}`, {
       title: 'Roam',
-      type: 'error',
+      kind: 'error',
     }).then((ok) => {
       if (ok !== undefined) {
         appWindow.close();
@@ -33,7 +34,11 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<PhaserWrapper />} />
+        <Route path="/" element={
+          <Suspense fallback={<Loading />}>
+            <PhaserWrapper />
+          </Suspense>
+        } />
         <Route path="/setting" element={
           <Suspense fallback={<Loading />}>
             <MantineProvider

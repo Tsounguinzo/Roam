@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use tauri::App;
 use tauri_plugin_store::StoreBuilder;
 
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppConfig {
@@ -54,7 +55,7 @@ pub fn convert_path(path_str: &str) -> Option<String> {
 }
 
 pub fn app_root() -> PathBuf {
-    tauri::api::path::config_dir().unwrap().join("Roam")
+    dirs::config_dir().unwrap().join("Roam")
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -71,14 +72,12 @@ pub fn if_app_config_does_not_exist_create_default(app: &mut App, config_name: &
             _ => return,
         };
         let json_data: serde_json::Value = serde_json::from_str(default_config).unwrap();
-        let mut store = StoreBuilder::new(app.handle(), PathBuf::from(setting_path)).build();
+        let store = StoreBuilder::new(app.handle(), PathBuf::from(setting_path))
+            .build()
+            .unwrap();
 
         // note that values must be serd_json::Value to be compatible with JS
-        store
-            .insert("app".to_string(), json!(json_data))
-            .unwrap_or_else(|err| {
-                println!("Error inserting into store: {}", err);
-            });
+        store.set("app".to_string(), json!(json_data));
         store.save().unwrap();
         info!("Create default config file: {}", config_name);
     }

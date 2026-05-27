@@ -1,4 +1,4 @@
-import { UpdateManifest } from "@tauri-apps/api/updater";
+import { Update } from "@tauri-apps/plugin-updater";
 import { ISpriteConfig } from "../ISpriteConfig";
 
 export enum PetCardType {
@@ -22,5 +22,5 @@ export interface PhaserCanvasProps {
 
 export interface UpdaterPopupProps {
     shouldUpdate: boolean,
-    manifest: UpdateManifest | undefined,
+    manifest: Update | undefined,
 }

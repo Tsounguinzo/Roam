@@ -1,74 +1,54 @@
 {
   "build": {
-    "beforeDevCommand": "npm run dev",
+    "beforeDevCommand": "npm run web:dev",
     "beforeBuildCommand": "npm run build",
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist",
-    "withGlobalTauri": false
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420"
   },
-  "package": {
-    "productName": "Roam",
-    "version": "0.0.1"
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "category": "Productivity",
+    "copyright": "Copyright (c) 2026 Tsounguinzo",
+    "createUpdaterArtifacts": "v1Compatible"
   },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "window": {
-        "all": true
-      },
-      "shell": {
-        "all": false,
-        "open": true
-      },
-      "fs": {
-        "all": true,
-        "scope": {
-          "allow": ["**"],
-          "requireLiteralLeadingDot": false
-        }
-      },
-      "protocol": {
-        "asset": true,
-        "assetScope": ["**"]
-      },
-      "path": {
-        "all": true
-      },
-      "dialog": {
-        "all": true
-      },
-      "process": {
-        "all": false,
-        "exit": false,
-        "relaunch": true,
-        "relaunchDangerousAllowSymlinkMacos": false
-      }
-    },
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "Roam",
-      "category": "Productivity",
-      "copyright": "Copyright (c) 2026 Tsounguinzo",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ]
-    },
+  "productName": "Roam",
+  "mainBinaryName": "Roam",
+  "version": "0.0.1",
+  "identifier": "Roam",
+  "plugins": {
     "updater": {
-      "active": true,
-      "dialog": false,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDFCRTg4MUI4NTU4QzhBNzkKUldSNWlveFZ1SUhvRzBSSjY3anQ0YmdNQVdSMFZ2ZEtoQnpkUVplWDJybXVFMXpVOUxRc3JiUTgK",
-      "endpoints": ["https://github.com/Tsounguinzo/Roam/releases/latest/download/latest.json"],
+      "endpoints": [
+        "https://github.com/Tsounguinzo/Roam/releases/latest/download/latest.json"
+      ],
       "windows": {
         "installMode": "passive"
-      }
+      },
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDFCRTg4MUI4NTU4QzhBNzkKUldSNWlveFZ1SUhvRzBSSjY3anQ0YmdNQVdSMFZ2ZEtoQnpkUVplWDJybXVFMXpVOUxRc3JiUTgK"
+    }
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "macOSPrivateApi": true,
+    "trayIcon": {
+      "iconPath": "icons/32x32.png",
+      "iconAsTemplate": true
     },
     "security": {
-      "csp": "asset: https://asset.localhost"
+      "assetProtocol": {
+        "scope": [
+          "**"
+        ],
+        "enable": true
+      },
+      "csp": "asset: https://asset.localhost; connect-src ipc: http://ipc.localhost"
     },
     "windows": [
       {
@@ -80,13 +60,12 @@
         "transparent": true,
         "decorations": false,
         "alwaysOnTop": true,
-        "skipTaskbar": true
+        "focusable": false,
+        "skipTaskbar": true,
+        "visibleOnAllWorkspaces": true,
+        "backgroundThrottling": "disabled",
+        "useHttpsScheme": true
       }
-    ],
-    "systemTray": {
-      "iconPath": "icons/32x32.png",
-      "iconAsTemplate": true
-    },
-    "macOSPrivateApi": true
+    ]
   }
 }

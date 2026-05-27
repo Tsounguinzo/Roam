@@ -3,7 +3,7 @@ import { ColorScheme } from "../types/ISetting";
 import { useSettingStore } from "../hooks/useSettingStore";
 import { emitUpdatePetsEvent } from "./event";
 import i18next from "i18next";
-import { info } from "tauri-plugin-log-api";
+import { info } from "@tauri-apps/plugin-log";
 import { DispatchType } from "../types/IEvents";
 import { ISpriteConfig } from "../types/ISpriteConfig";
 
@@ -28,7 +28,7 @@ export const handleSettingChange: IHandleSettingChange = (
         setAllowPetClimbing,
     } = useSettingStore.getState();
 
-    info(`Change setting, type: ${dispatchType}, value: ${newValue}`);
+    info(`Change setting, kind: ${dispatchType}, value: ${newValue}`);
 
     switch (dispatchType) {
         case DispatchType.ChangeAppLanguage:
