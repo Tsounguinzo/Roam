@@ -1,6 +1,7 @@
 use super::conf::AppConfig;
 use log::{info, warn};
 use tauri::utils::config::BackgroundThrottlingPolicy;
+use tauri::window::Color;
 use tauri::{
     AppHandle, Manager, PhysicalPosition, PhysicalSize, Position, Size, WebviewUrl, WebviewWindow,
     WebviewWindowBuilder,
@@ -87,6 +88,12 @@ pub fn apply_overlay_window(window: &WebviewWindow) -> Result<(), String> {
     }
 
     window.set_decorations(false).map_err(|e| e.to_string())?;
+    if let Err(err) = window.set_shadow(false) {
+        warn!("Could not disable overlay window shadow: {err}");
+    }
+    if let Err(err) = window.set_background_color(Some(Color(0, 0, 0, 0))) {
+        warn!("Could not clear overlay window background: {err}");
+    }
     window.set_always_on_top(true).map_err(|e| e.to_string())?;
     window.set_focusable(false).map_err(|e| e.to_string())?;
     window.set_skip_taskbar(true).map_err(|e| e.to_string())?;
@@ -141,6 +148,8 @@ pub async fn reopen_main_window(app: tauri::AppHandle) -> Result<(), String> {
     let window = WebviewWindowBuilder::new(&app, "main", WebviewUrl::App("/".into()))
         .resizable(false)
         .transparent(true)
+        .shadow(false)
+        .background_color(Color(0, 0, 0, 0))
         .decorations(false)
         .always_on_top(true)
         .focusable(false)
