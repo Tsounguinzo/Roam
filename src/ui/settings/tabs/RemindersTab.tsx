@@ -1,6 +1,5 @@
 import {
   ActionIcon,
-  Badge,
   Box,
   Button,
   Group,
@@ -10,14 +9,13 @@ import {
 } from '@mantine/core';
 import {
   IconClock,
-  IconLock,
-  IconPalette,
   IconPlayerPlay,
   IconPlus,
   IconTrash,
   IconVolume,
 } from '@tabler/icons-react';
 import { memo, useCallback, useEffect, useState, type CSSProperties } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   BANNER_THEMES,
   DEFAULT_REMINDER_PREFS,
@@ -25,9 +23,10 @@ import {
   FLIER_HEADS,
   FONT_OPTIONS,
   LEAD_OPTIONS,
-  REMINDERS_STORAGE_KEY,
+  readReminderPrefs,
   SOUND_OPTIONS,
   SPEED_OPTIONS,
+  writeReminderPrefs,
   type ReminderPrefs,
   type FlightReminder,
 } from './reminders/options';
@@ -39,23 +38,16 @@ import {
   resolveReminderFlightAssets,
   type ReminderFlightRequest,
 } from '../../reminders/flight';
+import SectionCard from '../layout/SectionCard';
+import { SettingsTabId } from '../../../types/ISetting';
+import {
+  REMINDER_OWNED_ITEMS_CHANGED,
+  readOwnedReminderItems,
+  ownsReminderItem,
+  type OwnedReminderItems,
+} from './reminders/ownership';
 
-type AppearancePanel = 'flier' | 'banner' | 'typo' | 'sound';
-
-const mergePrefs = (value: Partial<ReminderPrefs> | null): ReminderPrefs => ({
-  ...DEFAULT_REMINDER_PREFS,
-  ...(value ?? {}),
-  calendarLinks: Array.isArray(value?.calendarLinks) ? value.calendarLinks : [],
-  reminders: Array.isArray(value?.reminders) ? value.reminders : [],
-});
-
-const readPrefs = (): ReminderPrefs => {
-  try {
-    return mergePrefs(JSON.parse(localStorage.getItem(REMINDERS_STORAGE_KEY) ?? 'null'));
-  } catch {
-    return mergePrefs(null);
-  }
-};
+type AppearancePanel = 'avatar' | 'plane' | 'banner' | 'text' | 'sound';
 
 const formatDateTimeLocal = (date: Date) => {
   const offset = date.getTimezoneOffset() * 60_000;
@@ -142,11 +134,30 @@ function BannerWaveFilter() {
   );
 }
 
+interface StorePromptProps {
+  category: AppearancePanel;
+  onOpenStore: (category: AppearancePanel) => void;
+}
+
+function StorePrompt({ category, onOpenStore }: StorePromptProps) {
+  return (
+    <Box className="mt-4 rounded-[var(--roam-wobble-b)] border-2 border-dashed border-[var(--roam-ink)] bg-[var(--roam-paper)] p-4 text-center">
+      <Text className="font-note text-xl leading-none text-[var(--roam-ink)]">Want more?</Text>
+      <Text className="mt-1 text-sm text-[var(--roam-muted)]">Get more from Store.</Text>
+      <Button className="mt-3" size="xs" onClick={() => onOpenStore(category)}>
+        Open Store
+      </Button>
+    </Box>
+  );
+}
+
 function RemindersTab() {
-  const [prefs, setPrefs] = useState(readPrefs);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [prefs, setPrefs] = useState(readReminderPrefs);
+  const [ownedItems, setOwnedItems] = useState<OwnedReminderItems>(readOwnedReminderItems);
   const [reminderTitle, setReminderTitle] = useState('Meeting');
   const [reminderStartsAt, setReminderStartsAt] = useState(() => formatDateTimeLocal(new Date(Date.now() + 30 * 60_000)));
-  const [appearancePanel, setAppearancePanel] = useState<AppearancePanel>('flier');
+  const [appearancePanel, setAppearancePanel] = useState<AppearancePanel>('avatar');
 
   const sendFlightRequest = useCallback((request: ReminderFlightRequest) => {
     localStorage.setItem(REMINDER_FLIGHT_REQUEST_KEY, JSON.stringify(request));
@@ -154,8 +165,17 @@ function RemindersTab() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(REMINDERS_STORAGE_KEY, JSON.stringify(prefs));
+    writeReminderPrefs(prefs);
   }, [prefs]);
+
+  useEffect(() => {
+    const handleOwnedItemsChanged = (event: Event) => {
+      setOwnedItems((event as CustomEvent<OwnedReminderItems>).detail ?? readOwnedReminderItems());
+    };
+
+    window.addEventListener(REMINDER_OWNED_ITEMS_CHANGED, handleOwnedItemsChanged);
+    return () => window.removeEventListener(REMINDER_OWNED_ITEMS_CHANGED, handleOwnedItemsChanged);
+  }, []);
 
   const flightAssets = resolveReminderFlightAssets(createReminderFlightRequest(prefs, prefs.messageTemplate.replaceAll('{title}', 'Meeting').replaceAll('{minutes}', String(prefs.leadMinutes))));
   const { theme, head, color, font } = flightAssets;
@@ -163,6 +183,36 @@ function RemindersTab() {
   const updatePrefs = useCallback((patch: Partial<ReminderPrefs>) => {
     setPrefs((current) => ({ ...current, ...patch }));
   }, []);
+
+  useEffect(() => {
+    setPrefs((current) => {
+      const nextPrefs = { ...current };
+      let changed = false;
+
+      if (!ownsReminderItem('avatar', nextPrefs.flierHead, ownedItems)) {
+        nextPrefs.flierHead = DEFAULT_REMINDER_PREFS.flierHead;
+        changed = true;
+      }
+      if (!ownsReminderItem('plane', nextPrefs.flierColor, ownedItems)) {
+        nextPrefs.flierColor = DEFAULT_REMINDER_PREFS.flierColor;
+        changed = true;
+      }
+      if (!ownsReminderItem('banner', nextPrefs.theme, ownedItems)) {
+        nextPrefs.theme = DEFAULT_REMINDER_PREFS.theme;
+        changed = true;
+      }
+      if (!ownsReminderItem('text', nextPrefs.font, ownedItems)) {
+        nextPrefs.font = DEFAULT_REMINDER_PREFS.font;
+        changed = true;
+      }
+      if (!ownsReminderItem('sound', nextPrefs.soundPack, ownedItems)) {
+        nextPrefs.soundPack = DEFAULT_REMINDER_PREFS.soundPack;
+        changed = true;
+      }
+
+      return changed ? nextPrefs : current;
+    });
+  }, [ownedItems]);
 
   const addReminder = useCallback(() => {
     if (!reminderTitle.trim() || !reminderStartsAt) return;
@@ -196,20 +246,27 @@ function RemindersTab() {
     playTestSound(request);
     sendFlightRequest(request);
   }, [prefs, sendFlightRequest]);
+  const openStore = useCallback((category: AppearancePanel) => {
+    const nextSearchParams = new URLSearchParams(searchParams);
+    nextSearchParams.set('tab', SettingsTabId.PetStore.toString());
+    nextSearchParams.set('storeCategory', category);
+    setSearchParams(nextSearchParams);
+  }, [searchParams, setSearchParams]);
+  const ownedHeads = FLIER_HEADS.filter((item) => ownsReminderItem('avatar', item.id, ownedItems));
+  const ownedColors = FLIER_COLORS.filter((item) => ownsReminderItem('plane', item.id, ownedItems));
+  const ownedThemes = BANNER_THEMES.filter((item) => ownsReminderItem('banner', item.id, ownedItems));
+  const ownedFonts = FONT_OPTIONS.filter((item) => ownsReminderItem('text', item.id, ownedItems));
+  const ownedSounds = SOUND_OPTIONS.filter((item) => ownsReminderItem('sound', item.id, ownedItems));
 
   return (
     <Box className="flex flex-col gap-5">
-      <Box className="flex justify-end">
-        <Button className="reminder-test-button" leftSection={<IconPlayerPlay size={18} />} onClick={testFlight}>
-          Send a test flight
-        </Button>
-      </Box>
       <Box className="grid grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] gap-5 max-[1040px]:grid-cols-1">
         <Box className="flex flex-col gap-5">
-          <section className="rounded-[var(--roam-wobble-a)] border-[2.5px] border-solid border-[var(--roam-ink)] bg-[var(--roam-card)] p-5 shadow-[var(--roam-shadow)]">
-            <Text className="font-note text-[24px] text-[var(--roam-ink)]">Reminders</Text>
-
-            <Box className="mt-4">
+          <SectionCard
+            title="Timing"
+            description="Choose when reminder flights appear and what the banner says."
+          >
+            <Box>
               <Text className="font-note text-lg leading-none text-[var(--roam-ink)]">Lead time</Text>
               <Text className="mt-1 text-sm text-[var(--roam-muted)]">Fly this long before a meeting</Text>
               <Box className="mt-3 grid grid-cols-3 gap-2.5 max-[720px]:grid-cols-1">
@@ -265,12 +322,12 @@ function RemindersTab() {
                 ))}
               </Group>
             </Box>
-          </section>
+          </SectionCard>
 
-          <section className="rounded-[var(--roam-wobble-b)] border-[2.5px] border-solid border-[var(--roam-ink)] bg-[var(--roam-card)] p-5 shadow-[var(--roam-shadow)]">
-            <Text className="font-note text-[24px] text-[var(--roam-ink)]">Manual reminders</Text>
-            <Text className="text-sm text-[var(--roam-muted)]">Create local fly-by reminders while calendar sync is hidden.</Text>
-
+          <SectionCard
+            title="Saved reminders"
+            description="Create local fly-by reminders until calendar sync is ready."
+          >
             <Box className="mt-4 grid grid-cols-[1fr_190px_auto] gap-3 max-[860px]:grid-cols-1">
               <TextInput label="Title" value={reminderTitle} onChange={(event) => setReminderTitle(event.currentTarget.value)} />
               <TextInput
@@ -310,11 +367,13 @@ function RemindersTab() {
                 ))
               )}
             </Box>
-          </section>
+          </SectionCard>
 
-          <section className="rounded-[var(--roam-wobble-b)] border-[2.5px] border-solid border-[var(--roam-ink)] bg-[var(--roam-card)] p-5 shadow-[var(--roam-shadow)]">
-            <Text className="font-note text-[24px] text-[var(--roam-ink)]">Flight</Text>
-            <Box className="mt-4 flex flex-col gap-4">
+          <SectionCard
+            title="Flight delivery"
+            description="Tune how the reminder crosses the screen."
+          >
+            <Box className="flex flex-col gap-4">
               <Box>
                 <Box className="mb-2 flex items-baseline justify-between gap-3">
                   <Text className="font-note text-lg">Speed</Text>
@@ -334,23 +393,8 @@ function RemindersTab() {
                   ))}
                 </Box>
               </Box>
-              <Box className="h-px bg-[rgba(32,38,47,0.14)]" />
-              <Box className="grid gap-4">
-                <Switch
-                  label="Fly again at meeting time"
-                  description="Send a second fly-by right when it starts"
-                  checked={prefs.flyAtStart}
-                  onChange={(event) => updatePrefs({ flyAtStart: event.currentTarget.checked })}
-                />
-                <Switch
-                  label="Engine sound"
-                  description="Play sound during reminders and test flights"
-                  checked={prefs.soundEnabled}
-                  onChange={(event) => updatePrefs({ soundEnabled: event.currentTarget.checked })}
-                />
-              </Box>
             </Box>
-          </section>
+          </SectionCard>
         </Box>
 
         <Box className="flex flex-col gap-5">
@@ -378,24 +422,31 @@ function RemindersTab() {
               </Box>
             </Box>
             <Box className="p-5">
-              <Group gap="xs">
-                <Badge leftSection={<IconPalette size={13} />} variant="light">
-                  {theme.name}
-                </Badge>
-                <Badge leftSection={<IconVolume size={13} />} variant="light">
-                  {SOUND_OPTIONS.find((sound) => sound.id === prefs.soundPack)?.name ?? 'Sound'}
-                </Badge>
-              </Group>
+              <Box className="flex items-start justify-between gap-4 max-[720px]:flex-col">
+                <Box>
+                  <Text className="mb-3 font-note text-[24px] text-[var(--roam-ink)]">Live preview</Text>
+                  <Box className="flex flex-wrap gap-x-5 gap-y-1 text-xs uppercase tracking-[0.08em] text-[var(--roam-muted)]">
+                    <span>{theme.name}</span>
+                    <span>{SOUND_OPTIONS.find((sound) => sound.id === prefs.soundPack)?.name ?? 'Sound'}</span>
+                  </Box>
+                </Box>
+                <Button className="reminder-test-button" leftSection={<IconPlayerPlay size={18} />} onClick={testFlight}>
+                  Preview flight
+                </Button>
+              </Box>
             </Box>
           </section>
 
-          <section className="rounded-[var(--roam-wobble-b)] border-[2.5px] border-solid border-[var(--roam-ink)] bg-[var(--roam-card)] p-5 shadow-[var(--roam-shadow)]">
-            <Text className="font-note text-[24px] text-[var(--roam-ink)]">Appearance</Text>
-            <Box className="reminder-subnav" role="tablist" aria-label="Appearance sections">
+          <SectionCard
+            title="Reminder style"
+            description="Avatar, plane, banner, text, and sound are separated so each choice is easier to find."
+          >
+            <Box className="reminder-subnav" role="tablist" aria-label="Reminder style sections">
               {[
-                ['flier', 'Flier'],
+                ['avatar', 'Avatar'],
+                ['plane', 'Plane'],
                 ['banner', 'Banner'],
-                ['typo', 'Typo'],
+                ['text', 'Text'],
                 ['sound', 'Sound'],
               ].map(([value, label]) => (
                 <button
@@ -409,24 +460,20 @@ function RemindersTab() {
               ))}
             </Box>
 
-            {appearancePanel === 'flier' && (
+            {appearancePanel === 'avatar' && (
               <>
-                <Text className="mt-4 font-note text-lg">Head</Text>
+                <Text className="mt-4 font-note text-lg">Avatar</Text>
                 <Box className="mt-2 grid grid-cols-3 gap-3 max-[720px]:grid-cols-2">
-                  {FLIER_HEADS.map((item) => {
-                    const locked = !item.free;
+                  {ownedHeads.map((item) => {
                     return (
                       <button
                         key={item.id}
                         type="button"
-                        className={`reminder-swatch reminder-swatch-large ${prefs.flierHead === item.id ? 'reminder-swatch-selected' : ''} ${locked ? 'reminder-swatch-locked' : ''}`}
+                        className={`reminder-swatch reminder-swatch-large ${prefs.flierHead === item.id ? 'reminder-swatch-selected' : ''}`}
                         onClick={() => {
-                          if (locked) return;
-                          updatePrefs({ flierHead: item.id, soundPack: item.sound });
-                          playSoundPreview(SOUND_OPTIONS.find((sound) => sound.id === item.sound)?.url);
+                          updatePrefs({ flierHead: item.id });
                         }}
                       >
-                        <span className="reminder-lock">{locked && <IconLock size={16} />}</span>
                         <span className="reminder-swatch-art">
                           {item.thumb ? <img src={item.thumb} alt="" /> : <span className="reminder-missing-art">{item.name.slice(0, 1)}</span>}
                         </span>
@@ -435,19 +482,22 @@ function RemindersTab() {
                     );
                   })}
                 </Box>
+                <StorePrompt category="avatar" onOpenStore={openStore} />
+              </>
+            )}
 
+            {appearancePanel === 'plane' && (
+              <>
                 <Text className="mt-4 font-note text-lg">Plane color</Text>
                 <Box className="mt-2 grid grid-cols-3 gap-3 max-[720px]:grid-cols-2">
-                  {FLIER_COLORS.map((item) => {
-                    const locked = !item.free;
+                  {ownedColors.map((item) => {
                     return (
                       <button
                         key={item.id}
                         type="button"
-                        className={`reminder-swatch reminder-swatch-large ${prefs.flierColor === item.id ? 'reminder-swatch-selected' : ''} ${locked ? 'reminder-swatch-locked' : ''}`}
-                        onClick={() => !locked && updatePrefs({ flierColor: item.id })}
+                        className={`reminder-swatch reminder-swatch-large ${prefs.flierColor === item.id ? 'reminder-swatch-selected' : ''}`}
+                        onClick={() => updatePrefs({ flierColor: item.id })}
                       >
-                        <span className="reminder-lock">{locked && <IconLock size={16} />}</span>
                         <span className="reminder-swatch-art reminder-plane-thumb">
                           {item.plane ? <img src={item.plane} alt="" /> : <span className="reminder-missing-art">{item.name.slice(0, 1)}</span>}
                         </span>
@@ -456,70 +506,77 @@ function RemindersTab() {
                     );
                   })}
                 </Box>
+                <StorePrompt category="plane" onOpenStore={openStore} />
               </>
             )}
 
             {appearancePanel === 'banner' && (
-              <Box className="mt-4 grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
-                {BANNER_THEMES.map((item) => {
-                  return (
+              <>
+                <Box className="mt-4 grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
+                  {ownedThemes.map((item) => {
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={`reminder-banner-tile ${prefs.theme === item.id ? 'reminder-swatch-selected' : ''}`}
+                        onClick={() => updatePrefs({ theme: item.id })}
+                      >
+                        <span
+                          className="reminder-theme-strip"
+                          style={{ background: `repeating-linear-gradient(-8deg, ${item.a} 0 10px, ${item.b} 10px 20px)` }}
+                        />
+                        <span>{item.name}</span>
+                      </button>
+                    );
+                  })}
+                </Box>
+                <StorePrompt category="banner" onOpenStore={openStore} />
+              </>
+            )}
+
+            {appearancePanel === 'text' && (
+              <>
+                <Box className="mt-4 grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
+                  {ownedFonts.map((item) => (
                     <button
                       key={item.id}
                       type="button"
-                      className={`reminder-banner-tile ${prefs.theme === item.id ? 'reminder-swatch-selected' : ''}`}
-                      onClick={() => updatePrefs({ theme: item.id })}
+                      className={`reminder-swatch ${prefs.font === item.id ? 'reminder-swatch-selected' : ''}`}
+                      onClick={() => updatePrefs({ font: item.id })}
                     >
-                      <span
-                        className="reminder-theme-strip"
-                        style={{ background: `repeating-linear-gradient(-8deg, ${item.a} 0 10px, ${item.b} 10px 20px)` }}
-                      />
+                      <span className="reminder-font-sample" style={{ fontFamily: item.stack }}>Hello</span>
                       <span>{item.name}</span>
                     </button>
-                  );
-                })}
-              </Box>
-            )}
-
-            {appearancePanel === 'typo' && (
-              <Box className="mt-4 grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
-                {FONT_OPTIONS.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={`reminder-swatch ${prefs.font === item.id ? 'reminder-swatch-selected' : ''}`}
-                    onClick={() => updatePrefs({ font: item.id })}
-                  >
-                    <span className="reminder-font-sample" style={{ fontFamily: item.stack }}>Hello</span>
-                    <span>{item.name}</span>
-                  </button>
-                ))}
-              </Box>
+                  ))}
+                </Box>
+                <StorePrompt category="text" onOpenStore={openStore} />
+              </>
             )}
 
             {appearancePanel === 'sound' && (
-              <Box className="mt-4 grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
-                {SOUND_OPTIONS.map((item) => {
-                  const locked = !item.free;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      className={`reminder-swatch ${prefs.soundPack === item.id ? 'reminder-swatch-selected' : ''} ${locked ? 'reminder-swatch-locked' : ''}`}
-                      onClick={() => {
-                        if (locked) return;
-                        updatePrefs({ soundPack: item.id });
-                        playSoundPreview(item.url);
-                      }}
-                    >
-                      <span className="reminder-lock">{locked && <IconLock size={16} />}</span>
-                      <IconVolume size={24} />
-                      <span>{item.name}</span>
-                    </button>
-                  );
-                })}
-              </Box>
+              <>
+                <Box className="mt-4 grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
+                  {ownedSounds.map((item) => {
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={`reminder-swatch ${prefs.soundPack === item.id ? 'reminder-swatch-selected' : ''}`}
+                        onClick={() => {
+                          updatePrefs({ soundPack: item.id });
+                          playSoundPreview(item.url);
+                        }}
+                      >
+                        <IconVolume size={24} />
+                        <span>{item.name}</span>
+                      </button>
+                    );
+                  })}
+                </Box>
+                <StorePrompt category="sound" onOpenStore={openStore} />
+              </>
             )}
-          </section>
+          </SectionCard>
         </Box>
       </Box>
     </Box>

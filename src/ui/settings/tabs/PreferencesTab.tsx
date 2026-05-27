@@ -1,14 +1,16 @@
-import { Box, Select, Slider, Text } from "@mantine/core";
+import { Box, Select, Slider, Switch, Text } from "@mantine/core";
 import languages from "../../../locale/languages";
 import SettingToggleRow from "./preferences/SettingToggleRow";
 import { useTranslation } from "react-i18next";
 import { handleSettingChange } from "../../../utils/handleSettingChange";
 import { useSettingStore } from "../../../hooks/useSettingStore";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 import { IconLanguage } from "@tabler/icons-react";
 import { invoke } from "@tauri-apps/api/core";
 import SettingActionRow from "./preferences/SettingActionRow";
 import { DispatchType } from "../../../types/IEvents";
+import SectionCard from "../layout/SectionCard";
+import { readReminderPrefs, updateReminderPrefs } from "./reminders/options";
 
 interface PreferencesToggleItem {
     title: string,
@@ -21,35 +23,39 @@ interface PreferencesToggleItem {
 function PreferencesTab() {
     const { t, i18n } = useTranslation();
     const { allowAutoStartUp, allowPetAboveTaskbar, allowPetInteraction, allowOverridePetScale, petScale, allowPetClimbing } = useSettingStore();
+    const [reminderSoundEnabled, setReminderSoundEnabled] = useState(() => readReminderPrefs().soundEnabled);
 
-    const generalSwitches: PreferencesToggleItem[] = [
+    const appSwitches: PreferencesToggleItem[] = [
         {
             title: t("Auto start-up"),
-            description: t("Automatically open Roam every time u start the computer"),
+            description: t("Automatically open Roam when your computer starts."),
             checked: allowAutoStartUp,
             dispatchType: DispatchType.SwitchAutoWindowStartUp,
         },
+    ];
+
+    const petBehaviorSwitches: PreferencesToggleItem[] = [
         {
-            title: t("Pet above taskbar"),
-            description: t("Make the pet float above taskbar (For Window User)"),
+            title: t("Companion above taskbar"),
+            description: t("Keep companions floating above the taskbar on Windows."),
             checked: allowPetAboveTaskbar,
             dispatchType: DispatchType.SwitchPetAboveTaskbar,
         },
         {
-            title: t("Pet interactions"),
-            description: t("If allow pet interaction turn on, user will be able to drag and move the pet around their window"),
+            title: t("Companion interactions"),
+            description: t("Let you drag companions and move them around the desktop."),
             checked: allowPetInteraction,
             dispatchType: DispatchType.SwitchAllowPetInteraction,
         },
         {
-            title: t("Allow pet climb"),
-            description: t("If allow pet climb turn on, pet will be able to climb on the left, right, and top of the window"),
+            title: t("Allow companion climb"),
+            description: t("Let companions climb along the left, right, and top edges of the screen."),
             checked: allowPetClimbing,
             dispatchType: DispatchType.SwitchAllowPetClimbing,
         },
         {
-            title: t("Override pet scale"),
-            description: t("Allow the program to adjust all pet sizes by a fixed amount determined by your preferences, ignoring any individual pet scales"),
+            title: t("Override companion scale"),
+            description: t("Use one shared size for all companions, ignoring individual companion scale values."),
             checked: allowOverridePetScale,
             dispatchType: DispatchType.OverridePetScale,
             component: allowOverridePetScale &&
@@ -57,24 +63,30 @@ function PreferencesTab() {
         }
     ];
 
-    const generalToggleRows = generalSwitches.map((setting, index) => {
-        return <SettingToggleRow {...setting} key={index} />
+    const appToggleRows = appSwitches.map((setting) => {
+        return <SettingToggleRow {...setting} key={setting.title} />
+    });
+
+    const petBehaviorToggleRows = petBehaviorSwitches.map((setting) => {
+        return <SettingToggleRow {...setting} key={setting.title} />
     });
 
     const openConfigFolder = useCallback(async () => {
         const configPath: string = await invoke("combine_config_path", { config_name: "" });
         await invoke("open_folder", { path: configPath });
     }, []);
+    const handleReminderSoundChange = useCallback((enabled: boolean) => {
+        updateReminderPrefs({ soundEnabled: enabled });
+        setReminderSoundEnabled(enabled);
+    }, []);
 
     return (
         <Box className="flex flex-col gap-[18px]">
-            <Text className="rotate-[-0.8deg] font-note text-2xl font-normal tracking-normal text-[var(--roam-ink)]">General</Text>
-            <Box className="overflow-hidden rounded-[var(--roam-wobble-a)] border-[2.5px] border-solid border-[var(--roam-ink)] bg-[var(--roam-card)] shadow-[var(--roam-shadow)]">
-                {generalToggleRows}
-            </Box>
-
-            <Text className="rotate-[-0.8deg] font-note text-2xl font-normal tracking-normal text-[var(--roam-ink)]">Appearance</Text>
-            <Box className="overflow-hidden rounded-[var(--roam-wobble-a)] border-[2.5px] border-solid border-[var(--roam-ink)] bg-[var(--roam-card)] shadow-[var(--roam-shadow)]">
+            <SectionCard
+                title={t("App and data")}
+                description={t("Controls that affect Roam itself, your language, and where local files live.")}
+            >
+                {appToggleRows}
                 <SettingActionRow
                     title={t("App Config Path")}
                     description={t(`The location path of where the app store your config such as settings, pets, etc`)}
@@ -98,7 +110,27 @@ function PreferencesTab() {
                         onChange={(value) => handleSettingChange(DispatchType.ChangeAppLanguage, value as string)}
                     />
                 </Box>
-            </Box>
+            </SectionCard>
+
+            <SectionCard
+                title={t("Companion behavior")}
+                description={t("Controls for how companions move, climb, scale, and sit around the desktop.")}
+            >
+                {petBehaviorToggleRows}
+            </SectionCard>
+
+            <SectionCard
+                title={t("Reminder preferences")}
+                description={t("General reminder behavior that is not tied to a single saved reminder.")}
+            >
+                <Box className="flex items-center justify-between gap-[18px] px-4 py-[18px] max-[760px]:items-start">
+                    <Box className="max-w-[620px]">
+                        <Text className="font-note text-[19px] font-normal text-[var(--roam-ink)]">{t("Reminder sound")}</Text>
+                        <Text className="mt-1 text-[0.92rem] leading-normal text-[var(--roam-muted)]">{t("Play sound during reminders and test flights")}</Text>
+                    </Box>
+                    <Switch size={"lg"} checked={reminderSoundEnabled} onChange={(event) => handleReminderSoundChange(event.currentTarget.checked)} />
+                </Box>
+            </SectionCard>
         </Box>
     )
 }

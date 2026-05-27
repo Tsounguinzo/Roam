@@ -47,6 +47,35 @@ export const DEFAULT_REMINDER_PREFS: ReminderPrefs = {
   reminders: [],
 };
 
+export const mergeReminderPrefs = (value: Partial<ReminderPrefs> | null): ReminderPrefs => ({
+  ...DEFAULT_REMINDER_PREFS,
+  ...(value ?? {}),
+  calendarLinks: Array.isArray(value?.calendarLinks) ? value.calendarLinks : [],
+  reminders: Array.isArray(value?.reminders) ? value.reminders : [],
+});
+
+export const readReminderPrefs = (): ReminderPrefs => {
+  try {
+    return mergeReminderPrefs(JSON.parse(localStorage.getItem(REMINDERS_STORAGE_KEY) ?? 'null'));
+  } catch {
+    return mergeReminderPrefs(null);
+  }
+};
+
+export const writeReminderPrefs = (prefs: ReminderPrefs) => {
+  localStorage.setItem(REMINDERS_STORAGE_KEY, JSON.stringify(prefs));
+};
+
+export const updateReminderPrefs = (patch: Partial<ReminderPrefs>) => {
+  const nextPrefs = {
+    ...readReminderPrefs(),
+    ...patch,
+  };
+
+  writeReminderPrefs(nextPrefs);
+  return nextPrefs;
+};
+
 export const LEAD_OPTIONS = [5, 15, 30];
 
 export const SPEED_OPTIONS: Array<{ value: ReminderFlightSpeed; label: string; description: string }> = [

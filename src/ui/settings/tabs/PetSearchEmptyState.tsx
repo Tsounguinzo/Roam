@@ -15,9 +15,9 @@ function PetSearchEmptyState({ query }: PetSearchEmptyStateProps) {
             <Box className="mb-2 inline-flex text-[var(--roam-blue)]">
                 <IconSearchOff size={42} stroke={1.8} />
             </Box>
-            <Text className="!font-note !text-2xl !leading-[1.1] !text-[var(--roam-ink)]">{t("No pets found")}</Text>
+            <Text className="!font-note !text-2xl !leading-[1.1] !text-[var(--roam-ink)]">{t("No companions found")}</Text>
             <Text className="mt-1 !text-[15px] !text-[var(--roam-muted)]">
-                {t("No pets match search", { query })}
+                {t("No companions match search", { query })}
             </Text>
         </Box>
     );

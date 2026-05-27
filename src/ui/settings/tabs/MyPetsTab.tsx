@@ -1,6 +1,6 @@
 import { memo, useCallback, useMemo, useState } from "react";
 import PetCard from "../../components/PetCard";
-import { Box, TextInput } from "@mantine/core";
+import { Box, Text, TextInput } from "@mantine/core";
 import AddPetCard from "./my-pets/AddPetCard";
 import { useTranslation } from "react-i18next";
 import { useSettingStore } from "../../../hooks/useSettingStore";
@@ -15,6 +15,7 @@ import { DispatchType } from "../../../types/IEvents";
 import { usePets } from "../../../hooks/usePets";
 import PetSearchEmptyState from "./PetSearchEmptyState";
 import { error } from "@tauri-apps/plugin-log";
+import SectionCard from "../layout/SectionCard";
 
 export function MyPetsTab() {
     const { refetch } = usePets();
@@ -73,18 +74,26 @@ export function MyPetsTab() {
     const hasSearchQuery = searchQuery.trim().length > 0;
 
     return (
-        <>
-            <TextInput
-                placeholder={t("Search for my pets")}
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.currentTarget.value)}
-                className="mx-4 mb-4"
-            />
-            <Box className="grid place-items-center gap-4 [grid-template-columns:repeat(auto-fill,minmax(250px,1fr))]">
+        <Box className="flex flex-col gap-5">
+            <SectionCard title={t("Companions")} description={t("Manage the desktop characters currently in your collection.")}>
+            <Box className="settings-toolbar">
+                <TextInput
+                    placeholder={t("Search your companions")}
+                    value={searchQuery}
+                    onChange={(event) => setSearchQuery(event.currentTarget.value)}
+                    className="min-w-0"
+                />
+                <Text className="font-note text-lg text-[var(--roam-muted)]">
+                    {t("Showing companions", { count: filteredPets.length })}
+                </Text>
+            </Box>
+
+            <Box className="grid place-items-center gap-4 p-5 [grid-template-columns:repeat(auto-fill,minmax(250px,1fr))]">
                 {PetCards.length > 0 ? PetCards : hasSearchQuery && <PetSearchEmptyState query={searchQuery} />}
                 {!hasSearchQuery && <AddPetCard />}
             </Box>
-        </>
+            </SectionCard>
+        </Box>
     );
 }
 
