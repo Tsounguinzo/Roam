@@ -4,7 +4,6 @@ import { IPetCardProps, PetCardType } from "../../types/components/type";
 import PhaserCanvas from "./PhaserCanvas";
 import { useInView } from "react-intersection-observer";
 import { ButtonVariant, CanvasSize, PrimaryColor } from "../../utils";
-import classes from './PetCard.module.css';
 import { usePetStateStore } from "../../hooks/usePetStateStore";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 import { SpriteType } from "../../types/ISpriteConfig";
@@ -27,12 +26,17 @@ function PetCard({ btnLabel, btnLabelCustom, pet, btnFunction, btnFunctionCustom
     return (
         <>
             {/* if the pet is currently in user viewport, show it, otherwise destroy its dom because it take a lot of resource */}
-            <Box id={`petCard-id-${pet.id ?? pet.customId}`} ref={ref} className={classes.boxWrapper} key={pet.id ?? pet.name}>
+            <Box
+                id={`petCard-id-${pet.id ?? pet.customId}`}
+                ref={ref}
+                className="max-w-[13rem] min-w-[13rem] overflow-hidden rounded-[var(--roam-wobble-a)] border-[2.5px] border-solid border-[var(--roam-ink)] bg-[var(--roam-card)] shadow-[var(--roam-shadow)] transition-[transform,box-shadow] duration-[120ms] ease-in even:rounded-[var(--roam-wobble-b)] hover:translate-y-[-2px] hover:rotate-[-0.5deg] hover:shadow-[5px_7px_0_rgba(32,38,47,0.18)]"
+                key={pet.id ?? pet.name}
+            >
                 {inView ?
                     <Box>
                         <PhaserCanvas pet={pet} playState={playState} key={pet.id} />
                         <Box p={"md"}>
-                            <Title order={4} className={classes.title}>{pet.name}</Title>
+                            <Title order={4} className="truncate text-center !font-note !text-xl !font-normal !text-[var(--roam-ink)]">{pet.name}</Title>
                             {/* for now use native select because select in mantine 7 is very slow, let see until further update */}
                             {/* <Select
                                 allowDeselect={false}

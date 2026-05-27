@@ -2,7 +2,7 @@ import { setSettings, toggleAutoStartUp } from "./settings";
 import { useSettingStore } from "../hooks/useSettingStore";
 import { emitUpdatePetsEvent } from "./event";
 import i18next from "i18next";
-import { info } from "@tauri-apps/plugin-log";
+import { error, info } from "@tauri-apps/plugin-log";
 import { DispatchType } from "../types/IEvents";
 import { ISpriteConfig } from "../types/ISpriteConfig";
 
@@ -28,9 +28,21 @@ export const handleSettingChange: IHandleSettingChange = (
 
     info(`Change setting, kind: ${dispatchType}, value: ${newValue}`);
 
+    const saveSetting = (setKey: string, value: unknown) => {
+        void setSettings({ setKey, newValue: value }).catch((err) => {
+            error(`Failed to save setting ${setKey}: ${err}`);
+        });
+    };
+
+    const emitPetsEvent = () => {
+        void emitUpdatePetsEvent({ dispatchType, newValue }).catch((err) => {
+            error(`Failed to emit setting change ${dispatchType}: ${err}`);
+        });
+    };
+
     switch (dispatchType) {
         case DispatchType.ChangeAppLanguage:
-            setSettings({ setKey: "language", newValue: newValue });
+            saveSetting("language", newValue);
             setLanguage(newValue as string);
             i18next.changeLanguage(newValue as string);
             localStorage.setItem("language", newValue as string);
@@ -41,38 +53,35 @@ export const handleSettingChange: IHandleSettingChange = (
             setAllowAutoStartUp(newValue as boolean);
             return;
         case DispatchType.SwitchPetAboveTaskbar:
-            setSettings({ setKey: "allowPetAboveTaskbar", newValue: newValue });
+            saveSetting("allowPetAboveTaskbar", newValue);
             setAllowPetAboveTaskbar(newValue as boolean);
-            emitUpdatePetsEvent({ dispatchType, newValue });
+            emitPetsEvent();
             return;
         case DispatchType.SwitchAllowPetInteraction:
-            setSettings({ setKey: "allowPetInteraction", newValue: newValue });
+            saveSetting("allowPetInteraction", newValue);
             setAllowPetInteraction(newValue as boolean);
-            emitUpdatePetsEvent({ dispatchType, newValue });
+            emitPetsEvent();
             return;
         case DispatchType.SwitchAllowPetClimbing:
-            setSettings({ setKey: "allowPetClimbing", newValue: newValue });
+            saveSetting("allowPetClimbing", newValue);
             setAllowPetClimbing(newValue as boolean);
-            emitUpdatePetsEvent({ dispatchType, newValue });
+            emitPetsEvent();
             return;
         case DispatchType.AddPet:
-            emitUpdatePetsEvent({ dispatchType, newValue });
+            emitPetsEvent();
             return;
         case DispatchType.RemovePet:
-            emitUpdatePetsEvent({ dispatchType, newValue });
+            emitPetsEvent();
             return;
         case DispatchType.OverridePetScale:
-            setSettings({
-                setKey: "allowOverridePetScale",
-                newValue: newValue,
-            });
+            saveSetting("allowOverridePetScale", newValue);
             setAllowOverridePetScale(newValue as boolean);
-            emitUpdatePetsEvent({ dispatchType, newValue });
+            emitPetsEvent();
             return;
         case DispatchType.ChangePetScale:
-            setSettings({ setKey: "petScale", newValue: newValue });
+            saveSetting("petScale", newValue);
             setPetScale(newValue as number);
-            emitUpdatePetsEvent({ dispatchType, newValue });
+            emitPetsEvent();
             return;
         default:
             return;

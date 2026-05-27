@@ -1,14 +1,13 @@
 import { Box, Button, Text } from "@mantine/core";
 import { SettingActionRowProps } from "../../types";
 import { ButtonVariant } from "../../../../utils";
-import classes from "./SettingRow.module.css";
 
 function SettingActionRow({ title, description, buttonLabel, onClick }: SettingActionRowProps) {
     return (
-        <Box className={classes.row}>
-            <Box className={classes.body}>
-                <Text className={classes.title}>{title}</Text>
-                <Text className={classes.description}>{description}</Text>
+        <Box className="flex items-center justify-between gap-[18px] border-b-2 border-dashed border-[rgba(32,38,47,0.14)] px-4 py-[18px] last:border-b-0">
+            <Box className="max-w-[620px]">
+                <Text className="font-note text-[19px] font-normal text-[var(--roam-ink)]">{title}</Text>
+                <Text className="mt-1 text-[0.92rem] leading-normal text-[var(--roam-muted)]">{description}</Text>
             </Box>
             <Button variant={ButtonVariant} onClick={onClick}>{buttonLabel}</Button>
         </Box>

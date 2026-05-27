@@ -28,7 +28,6 @@ import { open } from '@tauri-apps/plugin-shell';
 import { isTauriRuntime } from './utils/runtime';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
-import classes from './SettingsWindow.module.css';
 
 function SettingsWindow() {
   const { language, pets, defaultPet } = useSettingStore();
@@ -108,17 +107,17 @@ function SettingsWindow() {
     <>
       <Notifications position={'top-center'} limit={2} />
       <ModalsProvider>
-        <Box className={classes.viewport}>
-          <Box className={clsx(classes.window, { [classes.compact]: isNavCompact })}>
-            <Box component="aside" className={classes.sidebar}>
-              <Box className={classes.brand}>
-                <img className={classes.brandLogo} src="/app-icon.png" alt="" />
-                <Box className={classes.brandText}>
-                  <span>Roam</span>
+        <Box className="h-screen bg-[var(--roam-paper)] text-[var(--roam-ink)] [background-image:linear-gradient(var(--roam-grid)_1px,transparent_1px),linear-gradient(90deg,var(--roam-grid)_1px,transparent_1px)] [background-size:24px_24px]">
+          <Box className={clsx('grid h-screen', isNavCompact ? 'grid-cols-[78px_1fr]' : 'grid-cols-[236px_1fr]')}>
+            <Box component="aside" className="flex flex-col gap-2 border-r-[3px] border-[var(--roam-ink)] bg-[var(--roam-paper-2)] px-3.5 py-[18px] max-[720px]:px-2.5 max-[720px]:py-4">
+              <Box className={clsx('flex items-center gap-2.5 px-1 pb-4', { 'justify-center px-0': isNavCompact })}>
+                <img className="h-[38px] w-[38px] rounded-[12px_8px_13px_9px/8px_13px_9px_12px] border-[2.5px] border-solid border-[var(--roam-ink)] bg-[var(--roam-card)] object-contain shadow-[2px_3px_0_rgba(32,38,47,0.16)]" src="/app-icon.png" alt="" />
+                <Box className={clsx('flex flex-col leading-none', { hidden: isNavCompact })}>
+                  <span className="font-hand text-[31px] font-bold rotate-[-2deg]">Roam</span>
                 </Box>
               </Box>
               <button
-                className={classes.navToggle}
+                className="inline-flex min-h-[38px] w-full cursor-pointer items-center justify-center rounded-[var(--roam-wobble-b)] border-2 border-solid border-[var(--roam-ink)] bg-[var(--roam-card)] text-[var(--roam-ink)] shadow-[2px_3px_0_rgba(21,27,45,0.14)] transition-[transform,background] duration-[120ms] ease-in hover:translate-y-[-1px] hover:rotate-[-0.6deg] hover:bg-[var(--roam-peach-soft)]"
                 type="button"
                 onClick={handleToggleNavigation}
                 aria-label={isNavCompact ? t('Expand navigation') : t('Collapse navigation')}
@@ -128,16 +127,22 @@ function SettingsWindow() {
               </button>
               <SettingsSidebarNav activeTab={normalizedTab} tabs={settingsTabs} compact={isNavCompact} />
               <a
-                className={classes.presentedBy}
+                className={clsx('mt-auto flex items-baseline justify-center gap-1 whitespace-nowrap px-1.5 pb-0.5 pt-3.5 text-center font-note text-sm text-[var(--roam-muted)] no-underline transition-[color,transform] duration-[120ms] ease-in hover:rotate-[-1.2deg] hover:text-[var(--roam-brown)]', { hidden: isNavCompact })}
                 href="https://beaudelaire.ca"
                 onClick={handlePresentedByClick}
               >
-                Presented by <b>Beaudelaire</b>
+                Presented by <b className="font-hand text-lg font-bold text-[var(--roam-ink)]">Beaudelaire</b>
               </a>
             </Box>
 
-            <Box component="main" className={classes.main}>
-              <Box className={classes.mainScroll} key={normalizedTab}>
+            <Box
+              component="main"
+              className={clsx(
+                'relative min-h-0 bg-transparent before:pointer-events-none before:fixed before:bottom-0 before:top-0 before:w-0.5 before:bg-[rgba(168,102,78,0.42)] before:content-[""]',
+                isNavCompact ? 'before:left-[104px]' : 'before:left-[262px]',
+              )}
+            >
+              <Box className="flex h-full w-full flex-col gap-6 overflow-y-auto py-[34px] pl-12 pr-10 pb-[42px] max-[720px]:px-[18px] max-[720px]:py-7" key={normalizedTab}>
                 <PageHeader title={settingsTabs[normalizedTab].title} description={settingsTabs[normalizedTab].description} />
                 <CurrentSettingTab />
               </Box>

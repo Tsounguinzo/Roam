@@ -24,7 +24,7 @@ const getPets = async () => {
         }
     });
 
-    if (saveConfigAgain) setConfig({ configName: "pets.json", newConfig: pets });
+    if (saveConfigAgain) await setConfig({ configName: "pets.json", newConfig: pets });
 
     setPets(pets);
     return pets;

@@ -47,34 +47,30 @@ interface ISetSetting extends IGetAppSetting {
     setKey: string,
     newValue: unknown,
 }
-export function setSettings({ configName = "settings.json", key = "app", setKey, newValue }: ISetSetting) {
+export async function setSettings({ configName = "settings.json", key = "app", setKey, newValue }: ISetSetting) {
     if (!isTauriRuntime()) return;
 
-    (async () => {
-        let setting: any = await getAppSettings({ configName });
-        setting[setKey] = newValue;
-        const configPath: string = await invoke("combine_config_path", { config_name: configName });
-        // if not exist, create new file, so we don't need to check if file exists
-        const store = await Store.load(configPath);
-        await store.set(key, setting);
-        await store.save();
-    })()
+    let setting: any = await getAppSettings({ configName });
+    setting[setKey] = newValue;
+    const configPath: string = await invoke("combine_config_path", { config_name: configName });
+    // if not exist, create new file, so we don't need to check if file exists
+    const store = await Store.load(configPath);
+    await store.set(key, setting);
+    await store.save();
 }
 
 // this function differs from setSettings because it will replace the whole config file, not just some specific key
 export interface ISetConfig extends IGetAppSetting {
     newConfig: unknown,
 }
-export function setConfig({ configName = "settings.json", key = "app", newConfig }: ISetConfig) {
+export async function setConfig({ configName = "settings.json", key = "app", newConfig }: ISetConfig) {
     if (!isTauriRuntime()) return;
 
-    (async () => {
-        const configPath: string = await invoke("combine_config_path", { config_name: configName });
-        // if not exist, create new file, so we don't need to check if file exists
-        const store = await Store.load(configPath);
-        await store.set(key, newConfig);
-        await store.save();
-    })()
+    const configPath: string = await invoke("combine_config_path", { config_name: configName });
+    // if not exist, create new file, so we don't need to check if file exists
+    const store = await Store.load(configPath);
+    await store.set(key, newConfig);
+    await store.save();
 }
 
 export async function getNoneExistingConfigFileName({ configName, extension, folderName }: { configName: string, extension: string, folderName?: string }) {
@@ -107,12 +103,12 @@ async function updateCustomPetConfig(newCustomPetPath: string) {
 
         if (customPetConfig) {
             customPetConfig.push(newCustomPetPath);
-            setConfig({ configName: DefaultConfigName.PET_LINKER, newConfig: customPetConfig });
+            await setConfig({ configName: DefaultConfigName.PET_LINKER, newConfig: customPetConfig });
             return;
         }
     }
 
-    setConfig({ configName: DefaultConfigName.PET_LINKER, newConfig: [newCustomPetPath] });
+    await setConfig({ configName: DefaultConfigName.PET_LINKER, newConfig: [newCustomPetPath] });
 }
 
 export async function saveCustomPet(petObject: IPetObject) {
@@ -133,7 +129,7 @@ export async function saveCustomPet(petObject: IPetObject) {
         await mkdir('assets', { baseDir: BaseDirectory.AppConfig, recursive: true });
         await copyFile(userImageSrc, petObject.imageSrc);
 
-        setConfig({ configName: `custom-pets/${uniquePetFileName}.json`, newConfig: petObject });
+        await setConfig({ configName: `custom-pets/${uniquePetFileName}.json`, newConfig: petObject });
 
         // this config is the one that will be used to load custom pets (act as a list of custom pets)
         await updateCustomPetConfig(await invoke("combine_config_path", { config_name: `custom-pets/${uniquePetFileName}.json` }));

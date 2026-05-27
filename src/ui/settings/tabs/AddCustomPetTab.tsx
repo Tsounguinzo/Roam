@@ -22,7 +22,6 @@ import {
     IconTrash
 } from "@tabler/icons-react";
 import { open } from "@tauri-apps/plugin-dialog";
-import classes from './AddCustomPetTab.module.css';
 import clsx from "clsx";
 import { exists } from "@tauri-apps/plugin-fs";
 import { notifications } from "@mantine/notifications";
@@ -212,7 +211,7 @@ function AddCustomPetTab() {
     const PetStates = petInfo.states.map((petState, index) => {
         return (
             <Accordion.Item value={index.toString()} key={index} className={clsx({
-                [classes.errorBorder]: petState.stateNameError || petState.startError || petState.endError,
+                '!border-2 !border-solid !border-[var(--roam-brown)]': petState.stateNameError || petState.startError || petState.endError,
             })}>
                 <Accordion.Control>
                     {petState.stateName || t('State')}
@@ -307,7 +306,7 @@ function AddCustomPetTab() {
                                 color: 'white',
                             }}
                             withArrow>
-                            <ActionIcon variant="transparent" className={clsx(classes.browse)}>
+                            <ActionIcon variant="transparent" className="!text-[var(--roam-ink)]">
                                 <IconFolderOpen onClick={selectImage} />
                             </ActionIcon>
                         </Tooltip>

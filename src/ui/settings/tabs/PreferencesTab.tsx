@@ -9,7 +9,6 @@ import { IconLanguage } from "@tabler/icons-react";
 import { invoke } from "@tauri-apps/api/core";
 import SettingActionRow from "./preferences/SettingActionRow";
 import { DispatchType } from "../../../types/IEvents";
-import classes from "./PreferencesTab.module.css";
 
 interface PreferencesToggleItem {
     title: string,
@@ -68,27 +67,27 @@ function PreferencesTab() {
     }, []);
 
     return (
-        <Box className={classes.page}>
-            <Text className={classes.sectionTitle}>General</Text>
-            <Box className={classes.panel}>
+        <Box className="flex flex-col gap-[18px]">
+            <Text className="rotate-[-0.8deg] font-note text-2xl font-normal tracking-normal text-[var(--roam-ink)]">General</Text>
+            <Box className="overflow-hidden rounded-[var(--roam-wobble-a)] border-[2.5px] border-solid border-[var(--roam-ink)] bg-[var(--roam-card)] shadow-[var(--roam-shadow)]">
                 {generalToggleRows}
             </Box>
 
-            <Text className={classes.sectionTitle}>Appearance</Text>
-            <Box className={classes.panel}>
+            <Text className="rotate-[-0.8deg] font-note text-2xl font-normal tracking-normal text-[var(--roam-ink)]">Appearance</Text>
+            <Box className="overflow-hidden rounded-[var(--roam-wobble-a)] border-[2.5px] border-solid border-[var(--roam-ink)] bg-[var(--roam-card)] shadow-[var(--roam-shadow)]">
                 <SettingActionRow
                     title={t("App Config Path")}
                     description={t(`The location path of where the app store your config such as settings, pets, etc`)}
                     buttonLabel={t("Open")}
                     onClick={openConfigFolder}
                 />
-                <Box className={classes.languageRow}>
+                <Box className="flex items-center justify-between gap-5 px-4 py-[18px] max-[860px]:flex-col max-[860px]:items-start">
                     <Box>
-                        <Text className={classes.rowTitle}>{t("Language")}</Text>
-                        <Text className={classes.rowDescription}>{t("Choose your display language for the app")}</Text>
+                        <Text className="font-note text-[19px] font-normal text-[var(--roam-ink)]">{t("Language")}</Text>
+                        <Text className="mt-1 text-[0.92rem] text-[var(--roam-muted)]">{t("Choose your display language for the app")}</Text>
                     </Box>
                     <Select
-                        className={classes.languageSelect}
+                        className="min-w-[230px] max-[860px]:w-full max-[860px]:min-w-full"
                         leftSection={<IconLanguage size={18} />}
                         allowDeselect={false}
                         checkIconPosition={"right"}

@@ -27,7 +27,7 @@ function PetStoreTab() {
         const userPetConfig = (await getAppSettings({ configName: "pets.json" })) ?? [];
         userPetConfig.push({ ...pet, id: crypto.randomUUID() });
 
-        setConfig({ configName: "pets.json", newConfig: userPetConfig });
+        await setConfig({ configName: "pets.json", newConfig: userPetConfig });
         setPets(userPetConfig);
 
         if (!await WebviewWindow.getByLabel('main')) await invoke("reopen_main_window");
@@ -52,7 +52,7 @@ function PetStoreTab() {
 
         // remove custom pet from linker
         const newPetLinker = petLinker.filter((p: ISpriteConfig) => p.name === pet.name);
-        setConfig({ configName: DefaultConfigName.PET_LINKER, newConfig: newPetLinker });
+        await setConfig({ configName: DefaultConfigName.PET_LINKER, newConfig: newPetLinker });
 
         notifications.show({
             message: t("pet name has been removed from your realm", { name: pet.name }),
@@ -87,15 +87,9 @@ function PetStoreTab() {
                 placeholder={t("Search for pets")}
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.currentTarget.value)}
-                style={{ marginBottom: '1rem', marginLeft: '1rem', marginRight: '1rem' }}
+                className="mx-4 mb-4"
             />
-            <Box style={{
-                display: "grid",
-                placeItems: "center",
-                gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-                gridGap: "1rem",
-                paddingBottom: "1rem",
-            }}>
+            <Box className="grid place-items-center gap-4 pb-4 [grid-template-columns:repeat(auto-fill,minmax(250px,1fr))]">
                 {PetCards.length > 0 ? PetCards : hasSearchQuery && <PetSearchEmptyState query={searchQuery} />}
             </Box>
         </>

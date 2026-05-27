@@ -367,30 +367,23 @@ export default class Pets extends Phaser.Scene {
     }
 
     removePet(petId: string): void {
-        this.pets = this.pets.filter((pet: Pet, index: number) => {
-            if (pet.id === petId) {
-                pet.destroy();
+        const removedPetIndex = this.pets.findIndex((pet) => pet.id === petId);
 
-                // get pet that use the same texture as the pet that is destroyed
-                const petsWithSameTexture = this.pets.filter(
-                    (pet: Pet) =>
-                        pet.texture.key === this.pets[index].texture.key
-                );
+        if (removedPetIndex === -1) return;
 
-                // remove texture if there is only one pet that use the texture because we don't need it anymore
-                if (petsWithSameTexture.length === 1) {
-                    this.textures.remove(pet.texture.key);
-                }
+        const [removedPet] = this.pets.splice(removedPetIndex, 1);
 
-                // remove index from petClimbAndCrawlIndex if it exist because the pet is destroyed
-                if (this.petClimbAndCrawlIndex.includes(index)) {
-                    this.petClimbAndCrawlIndex =
-                        this.petClimbAndCrawlIndex.filter((i) => i !== index);
-                }
-                return false;
-            }
-            return true;
-        });
+        this.petClimbAndCrawlIndex = this.petClimbAndCrawlIndex
+            .filter((index) => index !== removedPetIndex)
+            .map((index) => (index > removedPetIndex ? index - 1 : index));
+
+        this.tweens.killTweensOf(removedPet);
+        removedPet.removeAllListeners();
+        removedPet.disableInteractive();
+        removedPet.body?.stop();
+        removedPet.disableBody(true, true);
+        removedPet.setActive(false);
+        removedPet.setVisible(false);
     }
 
     updateDirection(pet: Pet, direction: Direction): void {
