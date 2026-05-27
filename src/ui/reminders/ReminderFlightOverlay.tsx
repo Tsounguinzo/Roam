@@ -74,12 +74,12 @@ function BannerWaveFilter() {
     <svg className="reminder-banner-filters" aria-hidden="true" width="0" height="0">
       <defs>
         <filter id="banner-wave" x="-20%" y="-60%" width="140%" height="220%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.009 0.018" numOctaves="1" seed="7" result="noise" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.011 0.024" numOctaves="1" seed="7" result="noise" />
           <feOffset in="noise" dx="0" dy="0" result="noiseShift">
             <animate
               attributeName="dx"
               dur="3.2s"
-              values="0;72;0"
+              values="0;110;0"
               calcMode="spline"
               keyTimes="0;0.5;1"
               keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
@@ -88,18 +88,18 @@ function BannerWaveFilter() {
             <animate
               attributeName="dy"
               dur="2.4s"
-              values="0;12;0"
+              values="0;26;0"
               calcMode="spline"
               keyTimes="0;0.5;1"
               keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
               repeatCount="indefinite"
             />
           </feOffset>
-          <feDisplacementMap in="SourceGraphic" in2="noiseShift" scale="10" xChannelSelector="R" yChannelSelector="G">
+          <feDisplacementMap in="SourceGraphic" in2="noiseShift" scale="20" xChannelSelector="R" yChannelSelector="G">
             <animate
               attributeName="scale"
               dur="2.2s"
-              values="8;14;8"
+              values="16;30;16"
               calcMode="spline"
               keyTimes="0;0.5;1"
               keySplines="0.45 0 0.55 1;0.45 0 0.55 1"

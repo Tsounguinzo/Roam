@@ -186,13 +186,12 @@
         border: 2px solid rgba(0, 0, 0, 0.18);
         border-radius: 6px;
         background: repeating-linear-gradient(-8deg, var(--reminder-stripe-a, #fffdf6) 0 22px, var(--reminder-stripe-b, #ffd34d) 22px 44px);
-        box-shadow: none;
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
         color: var(--reminder-banner-text, #151b2d);
-        clip-path: polygon(0% 10%, 12% 6%, 25% 9%, 38% 5%, 52% 8%, 66% 4%, 80% 7%, 100% 5%, 100% 90%, 88% 94%, 74% 91%, 60% 96%, 45% 92%, 30% 96%, 14% 92%, 0% 95%);
-        filter: none;
+        filter: url(#banner-wave);
         transform: skewX(-7deg);
-        will-change: clip-path, background-position, translate;
-        animation: reminder-flight-bob 1.7s ease-in-out infinite, reminder-flag-cloth-wave 1.35s ease-in-out infinite;
+        will-change: translate, filter;
+        animation: reminder-flight-bob 1.7s ease-in-out infinite;
     }
 
     .reminder-banner span {
@@ -579,13 +578,11 @@
         border: 2px solid rgba(0, 0, 0, 0.18);
         border-radius: 6px;
         background: repeating-linear-gradient(-8deg, var(--reminder-stripe-a, #fffdf6) 0 22px, var(--reminder-stripe-b, #ffd34d) 22px 44px);
-        box-shadow: none;
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
         color: var(--reminder-banner-text, #151b2d);
-        clip-path: polygon(0% 10%, 12% 6%, 25% 9%, 38% 5%, 52% 8%, 66% 4%, 80% 7%, 100% 5%, 100% 90%, 88% 94%, 74% 91%, 60% 96%, 45% 92%, 30% 96%, 14% 92%, 0% 95%);
-        filter: none;
+        filter: url(#banner-wave);
         transform: skewX(-7deg);
-        will-change: clip-path, background-position, translate;
-        animation: reminder-flag-cloth-wave 1.35s ease-in-out infinite;
+        will-change: translate, filter;
     }
 
     .reminder-flight-banner span {
@@ -678,17 +675,6 @@
         }
         50% {
             transform: translateY(-9px) rotate(-1.4deg) scaleX(0.985);
-        }
-    }
-
-    @keyframes reminder-flag-cloth-wave {
-        0%, 100% {
-            clip-path: polygon(0% 10%, 12% 6%, 25% 9%, 38% 5%, 52% 8%, 66% 4%, 80% 7%, 100% 5%, 100% 90%, 88% 94%, 74% 91%, 60% 96%, 45% 92%, 30% 96%, 14% 92%, 0% 95%);
-            background-position: 0 0;
-        }
-        50% {
-            clip-path: polygon(0% 6%, 12% 10%, 25% 5%, 38% 9%, 52% 4%, 66% 8%, 80% 5%, 100% 9%, 100% 94%, 88% 90%, 74% 96%, 60% 91%, 45% 95%, 30% 91%, 14% 96%, 0% 91%);
-            background-position: 12px 2px;
         }
     }
 
