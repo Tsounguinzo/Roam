@@ -9,11 +9,6 @@ export interface ISpriteStateKey {
     }
 }
 
-export enum SpriteType {
-    DEFAULT = 'default',
-    CUSTOM = 'custom',
-}
-
 /*
  *  If "framesize" has been specify in the config, we don't have to include these object {
  *      width, height, highestFrameMax, totalSpriteLine 
@@ -35,21 +30,6 @@ export interface ISpriteConfig {
     frameSize?: number,
     highestFrameMax?: number,
     totalSpriteLine?: number,
-    type?: SpriteType,
-    customId?: string,
     imageSrc: string,
     states: ISpriteStateKey,
-}
-
-export interface IPetObject {
-    frameSize: number;
-    imageSrc: string;
-    name: string;
-    states: {
-        [key: string]: {
-            start: number;
-            end: number;
-        };
-    };
-    customId?: string;
 }

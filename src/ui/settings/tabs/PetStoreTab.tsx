@@ -11,14 +11,11 @@ import { handleSettingChange } from "../../../utils/handleSettingChange";
 import { PetCardType } from "../../../types/components/type";
 import { useSettingStore } from "../../../hooks/useSettingStore";
 import { DispatchType } from "../../../types/IEvents";
-import { DefaultConfigName } from "../../../types/ISetting";
 import { invoke } from "@tauri-apps/api/core";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { useDefaultPets } from "../../../hooks/usePets";
 import PetSearchEmptyState from "./PetSearchEmptyState";
 
 function PetStoreTab() {
-    const { refetch } = useDefaultPets();
     const { setPets, defaultPet } = useSettingStore();
     const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState("");
@@ -45,29 +42,6 @@ function PetStoreTab() {
         handleSettingChange(DispatchType.AddPet, pet);
     }, [setPets, t]);
 
-    const removeCustomPet = useCallback(async (pet: ISpriteConfig) => {
-        const petLinker = await getAppSettings({ configName: DefaultConfigName.PET_LINKER });
-
-        if (!petLinker) return;
-
-        // remove custom pet from linker
-        const newPetLinker = petLinker.filter((p: ISpriteConfig) => p.name === pet.name);
-        await setConfig({ configName: DefaultConfigName.PET_LINKER, newConfig: newPetLinker });
-
-        notifications.show({
-            message: t("pet name has been removed from your realm", { name: pet.name }),
-            title: t("Pet Removed"),
-            color: PrimaryColor,
-            icon: <IconCheck size="1rem" />,
-            withBorder: true,
-            autoClose: 800,
-        });
-
-        const petCardDom = document.getElementById(`petCard-id-${pet.customId}`);
-        if (petCardDom) petCardDom.remove();
-        refetch();
-    }, [refetch, t]);
-
     const filteredPets = useMemo(() => {
         return defaultPet.filter(pet =>
             pet.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -76,9 +50,9 @@ function PetStoreTab() {
 
     const PetCards = useMemo(() => {
         return filteredPets.map((pet: ISpriteConfig, index: number) => {
-            return <PetCard key={index} pet={pet} btnLabel={t("Acquire")} type={PetCardType.Add} btnFunction={() => addPetToConfig(pet)} btnLabelCustom={t("Remove")} btnFunctionCustom={() => removeCustomPet(pet)} />
+            return <PetCard key={index} pet={pet} btnLabel={t("Acquire")} type={PetCardType.Add} btnFunction={() => addPetToConfig(pet)} />
         });
-    }, [t, filteredPets, addPetToConfig, removeCustomPet]);
+    }, [t, filteredPets, addPetToConfig]);
     const hasSearchQuery = searchQuery.trim().length > 0;
 
     return (

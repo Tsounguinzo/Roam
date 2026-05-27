@@ -1,7 +1,6 @@
 import Phaser from "phaser";
-import { convertFileSrc } from "@tauri-apps/api/core";
 import { IPet } from "../types/IPet";
-import { ISpriteConfig, SpriteType } from "../types/ISpriteConfig";
+import { ISpriteConfig } from "../types/ISpriteConfig";
 
 export class Pet extends Phaser.Scene {
     private pet: IPet | null = null;
@@ -22,7 +21,7 @@ export class Pet extends Phaser.Scene {
 
         this.load.spritesheet({
             key: this.sprite!.name,
-            url: this.sprite!.type === SpriteType.CUSTOM ? convertFileSrc(this.sprite!.imageSrc) : this.sprite!.imageSrc,
+            url: this.sprite!.imageSrc,
             frameConfig: this.getFrameSize(this.sprite!)
         });
     }

@@ -1,5 +1,5 @@
-import { convertFileSrc, invoke } from "@tauri-apps/api/core";
-import { ISpriteConfig, SpriteType } from "../types/ISpriteConfig";
+import { invoke } from "@tauri-apps/api/core";
+import { ISpriteConfig } from "../types/ISpriteConfig";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { error } from "@tauri-apps/plugin-log";
 const appWindow = getCurrentWebviewWindow()
@@ -127,10 +127,7 @@ export class ConfigManager {
 
         this.load.spritesheet({
             key: sprite.name,
-            url:
-                sprite.type === SpriteType.CUSTOM
-                    ? convertFileSrc(sprite.imageSrc)
-                    : sprite.imageSrc,
+            url: sprite.imageSrc,
             frameConfig: this.getFrameSize(sprite),
         });
     }

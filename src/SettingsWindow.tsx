@@ -5,7 +5,6 @@ import {
   IconCat,
   IconSettings,
   IconBuildingStore,
-  IconPaw,
   IconBellRinging,
 } from '@tabler/icons-react';
 import SettingsSidebarNav from './ui/settings/navigation/SettingsSidebarNav';
@@ -25,7 +24,6 @@ import useQueryParams from './hooks/useQueryParams';
 import { ModalsProvider } from '@mantine/modals';
 import useInit from './hooks/useInit';
 import { checkForUpdate } from './utils/update';
-import AddCustomPetTab from './ui/settings/tabs/AddCustomPetTab';
 import { open } from '@tauri-apps/plugin-shell';
 import { isTauriRuntime } from './utils/runtime';
 import '@mantine/core/styles.css';
@@ -66,14 +64,6 @@ function SettingsWindow() {
       Icon: <IconBuildingStore size="1rem" />,
       label: t('Pet Shop'),
       tab: SettingsTabId.PetStore,
-    },
-    {
-      Component: AddCustomPetTab,
-      title: t("Add Custom Pet"),
-      description: t("Add your custom pet to your computer and watch them bring kawaii cuteness to your digital world!"),
-      Icon: <IconPaw size="1rem" />,
-      label: t('Add Custom Pet'),
-      tab: SettingsTabId.AddCustomPet,
     },
     {
       Component: PreferencesTab,

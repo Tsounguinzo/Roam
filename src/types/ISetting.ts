@@ -9,9 +9,8 @@ export interface IGetAppSetting {
 export enum SettingsTabId {
     MyPets = 0,
     PetStore = 1,
-    AddCustomPet = 2,
-    Reminders = 3,
-    Preferences = 4,
+    Reminders = 2,
+    Preferences = 3,
 }
 
 export interface SettingsTabDefinition {
@@ -23,6 +22,3 @@ export interface SettingsTabDefinition {
     tab: SettingsTabId,
 }
 
-export enum DefaultConfigName {
-    PET_LINKER = "pet_linker.json",
-}

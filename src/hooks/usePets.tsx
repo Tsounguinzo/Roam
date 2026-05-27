@@ -1,8 +1,7 @@
 import { UseQueryResult, useQuery } from "@tanstack/react-query";
 import { getAppSettings, setConfig } from "../utils/settings";
 import { useSettingStore } from "./useSettingStore";
-import { ISpriteConfig, SpriteType } from "../types/ISpriteConfig";
-import { DefaultConfigName } from "../types/ISetting";
+import { ISpriteConfig } from "../types/ISpriteConfig";
 import defaultPetConfig from "../config/pet_config";
 
 const { setPets, setDefaultPet } = useSettingStore.getState();
@@ -39,17 +38,6 @@ export function usePets(): UseQueryResult<unknown, Error> {
 
 const getDefaultPets = async () => {
     const defaultPets: ISpriteConfig[] = JSON.parse(JSON.stringify(defaultPetConfig));
-    const customPets = await getAppSettings({ configName: DefaultConfigName.PET_LINKER, withErrorDialog: false });
-
-    if (customPets && customPets.length > 0) {
-        for (const petPath of customPets) {
-            const pet: ISpriteConfig = await getAppSettings({ configName: petPath, withErrorDialog: false });
-            if (!pet) continue;
-            
-            pet.type = SpriteType.CUSTOM;
-            defaultPets.push(pet);
-        }
-    }
 
     setDefaultPet(defaultPets);
     return defaultPets;

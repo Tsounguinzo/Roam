@@ -6,15 +6,13 @@ import { useInView } from "react-intersection-observer";
 import { ButtonVariant, CanvasSize, PrimaryColor } from "../../utils";
 import { usePetStateStore } from "../../hooks/usePetStateStore";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
-import { SpriteType } from "../../types/ISpriteConfig";
 
-function PetCard({ btnLabel, btnLabelCustom, pet, btnFunction, btnFunctionCustom, type }: IPetCardProps) {
+function PetCard({ btnLabel, pet, btnFunction, type }: IPetCardProps) {
     const { petStates, storeDictPetStates } = usePetStateStore();
     const availableStates = petStates[pet.name] ?? Object.keys(pet.states).map(state => (state));
     const randomState = availableStates[Math.floor(Math.random() * availableStates.length)];
     const [playState, setPlayState] = useState<string>(randomState);
     const { ref, inView } = useInView();
-    const isCustomPet = (type === PetCardType.Add &&  pet.type === SpriteType.CUSTOM);
 
     // save pet to memoization so that we can use it later to save some resource
     useEffect(() => {
@@ -27,7 +25,7 @@ function PetCard({ btnLabel, btnLabelCustom, pet, btnFunction, btnFunctionCustom
         <>
             {/* if the pet is currently in user viewport, show it, otherwise destroy its dom because it take a lot of resource */}
             <Box
-                id={`petCard-id-${pet.id ?? pet.customId}`}
+                id={`petCard-id-${pet.id ?? pet.name}`}
                 ref={ref}
                 className="max-w-[13rem] min-w-[13rem] overflow-hidden rounded-[var(--roam-wobble-a)] border-[2.5px] border-solid border-[var(--roam-ink)] bg-[var(--roam-card)] shadow-[var(--roam-shadow)] transition-[transform,box-shadow] duration-[120ms] ease-in even:rounded-[var(--roam-wobble-b)] hover:translate-y-[-2px] hover:rotate-[-0.5deg] hover:shadow-[5px_7px_0_rgba(32,38,47,0.18)]"
                 key={pet.id ?? pet.name}
@@ -70,18 +68,6 @@ function PetCard({ btnLabel, btnLabelCustom, pet, btnFunction, btnFunctionCustom
                                 >
                                     {btnLabel}
                                 </Button>
-                                {
-                                    isCustomPet &&
-                                    <Button
-                                        variant={ButtonVariant}
-                                        fullWidth
-                                        onClick={btnFunctionCustom}
-                                        color={PrimaryColor}
-                                        leftSection={<IconTrash />}
-                                    >
-                                        {btnLabelCustom}
-                                    </Button>
-                                }
                             </Group>
                         </Box>
                     </Box>
