@@ -159,7 +159,6 @@ pub async fn reopen_main_window(app: tauri::AppHandle) -> Result<(), String> {
 
 pub fn focus_setting_window(window: &WebviewWindow) {
     let _ = window.unminimize();
-    let _ = window.set_always_on_top(true);
     let _ = window.set_size(tauri::LogicalSize::new(1000.0, 650.0));
     let _ = window.center();
     let _ = window.show();
@@ -180,7 +179,6 @@ pub fn open_setting_window(app: tauri::AppHandle) {
             .min_inner_size(500.0, 400.0)
             .decorations(true)
             .resizable(true)
-            .always_on_top(true)
             .theme(if settings.get_theme() == "dark" {
                 Some(tauri::Theme::Dark)
             } else {
