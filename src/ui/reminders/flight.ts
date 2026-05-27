@@ -2,7 +2,7 @@ import { DEFAULT_REMINDER_PREFS, getReminderColor, getReminderFont, getReminderH
 
 export const REMINDER_FLIGHT_REQUEST_KEY = 'roam-reminder-flight-request';
 export const REMINDER_FLIGHT_DURATION_MS = 9000;
-export const REMINDER_TEST_MESSAGE = 'Call with Beaudelaire in 5 minutes Call with Beaudelaire in 5 minutes';
+export const REMINDER_TEST_MESSAGE = 'Call with Beaudelaire in 5 minutes';
 export const REMINDER_BLADE_URL = '/reminders/blade.png';
 
 const SPEED_MULTIPLIERS = {
