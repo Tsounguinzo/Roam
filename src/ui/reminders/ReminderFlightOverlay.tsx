@@ -2,7 +2,7 @@ import { listen } from '@tauri-apps/api/event';
 import { memo, useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { EventType } from '../../types/IEvents';
 import { isTauriRuntime } from '../../utils/runtime';
-import { DEFAULT_REMINDER_PREFS, REMINDERS_STORAGE_KEY, type ReminderPrefs } from '../settings/tabs/reminders/options';
+import { DEFAULT_REMINDER_PREFS, getReminderBannerSizeStyle, REMINDERS_STORAGE_KEY, type ReminderBannerSize, type ReminderPrefs } from '../settings/tabs/reminders/options';
 import {
   REMINDER_BLADE_URL,
   REMINDER_FLIGHT_REQUEST_KEY,
@@ -11,6 +11,7 @@ import {
   resolveReminderFlightAssets,
   type ReminderFlightRequest,
 } from './flight';
+import ReminderBanner from './ReminderBanner';
 
 const readPrefs = (): ReminderPrefs => {
   try {
@@ -256,9 +257,18 @@ function ReminderFlightOverlay() {
           '--reminder-stripe-b': theme.b,
           '--reminder-banner-text': theme.text,
           '--reminder-banner-font': font.stack,
+          ...getReminderBannerSizeStyle(
+            (flight.bannerSize as ReminderBannerSize) ?? DEFAULT_REMINDER_PREFS.bannerSize,
+            'flight',
+            flight.message,
+          ),
         } as CSSProperties}
       >
-        <div className="reminder-flight-banner"><span>{flight.message}</span></div>
+        <ReminderBanner
+          className="reminder-flight-banner"
+          message={flight.message}
+          layoutKey={`${flight.bannerSize}:${flight.message}:${font.id}`}
+        />
         <div className="reminder-flight-rope" />
         <div className="reminder-flight-aircraft">
           <img key={color.id} className="reminder-flight-plane" src={color.base} alt="" />

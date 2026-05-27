@@ -1,4 +1,7 @@
+import type { CSSProperties } from 'react';
+
 export type ReminderFlightSpeed = 'normal' | 'fast' | 'ultra';
+export type ReminderBannerSize = 'small' | 'medium' | 'large';
 export type ReminderDisplay = 'cursor' | 'primary';
 
 export interface FlightReminder {
@@ -22,6 +25,7 @@ export interface ReminderPrefs {
   flierHead: string;
   flierColor: string;
   font: string;
+  bannerSize: ReminderBannerSize;
   soundPack: string;
   calendarLinks: string[];
   reminders: FlightReminder[];
@@ -42,6 +46,7 @@ export const DEFAULT_REMINDER_PREFS: ReminderPrefs = {
   flierHead: 'duck',
   flierColor: 'red',
   font: 'system',
+  bannerSize: 'medium',
   soundPack: 'quack',
   calendarLinks: [],
   reminders: [],
@@ -83,6 +88,86 @@ export const SPEED_OPTIONS: Array<{ value: ReminderFlightSpeed; label: string; d
   { value: 'fast', label: 'x1.5', description: 'Quick pass' },
   { value: 'ultra', label: 'x2', description: 'Blink fast' },
 ];
+
+export const BANNER_SIZE_OPTIONS: Array<{ value: ReminderBannerSize; label: string; description: string }> = [
+  { value: 'small', label: 'Small', description: 'Compact banner' },
+  { value: 'medium', label: 'Medium', description: 'Balanced size' },
+  { value: 'large', label: 'Large', description: 'Big banner text' },
+];
+
+const BANNER_SIZE_SCALE: Record<ReminderBannerSize, number> = {
+  small: 0.82,
+  medium: 1,
+  large: 1.22,
+};
+
+const BANNER_SIZE_BASE = {
+  preview: {
+    height: 64,
+    paddingX: 26,
+    fontSize: 30,
+    stripe: 22,
+    minWidth: 260,
+    maxWidth: 520,
+    borderRadius: 6,
+  },
+  flight: {
+    height: 116,
+    paddingX: 44,
+    fontSize: 54,
+    stripe: 38,
+    minWidth: 280,
+    maxWidth: 960,
+    borderRadius: 10,
+  },
+} as const;
+
+/** Caps banner width from message length so short text stays compact and long text can grow (up to absolute max). */
+export function getReminderBannerWidthCap(
+  message: string,
+  size: ReminderBannerSize = DEFAULT_REMINDER_PREFS.bannerSize,
+  context: keyof typeof BANNER_SIZE_BASE = 'preview',
+): number {
+  const normalizedSize = size in BANNER_SIZE_SCALE ? size : DEFAULT_REMINDER_PREFS.bannerSize;
+  const scale = BANNER_SIZE_SCALE[normalizedSize];
+  const base = BANNER_SIZE_BASE[context];
+  const round = (value: number) => Math.round(value);
+  const minWidth = round(base.minWidth * scale);
+  const absoluteMax = round(base.maxWidth * scale);
+  const fontSize = round(base.fontSize * scale);
+  const padding = round(base.paddingX * scale) * 2;
+  const estimated = padding + message.length * fontSize * 0.52;
+
+  return Math.min(absoluteMax, Math.max(minWidth, estimated));
+}
+
+export function getReminderBannerSizeStyle(
+  size: ReminderBannerSize = DEFAULT_REMINDER_PREFS.bannerSize,
+  context: keyof typeof BANNER_SIZE_BASE = 'preview',
+  message?: string,
+): CSSProperties {
+  const normalizedSize = size in BANNER_SIZE_SCALE ? size : DEFAULT_REMINDER_PREFS.bannerSize;
+  const scale = BANNER_SIZE_SCALE[normalizedSize];
+  const base = BANNER_SIZE_BASE[context];
+  const round = (value: number) => Math.round(value);
+  const stripe = round(base.stripe * scale);
+  const absoluteMax = round(base.maxWidth * scale);
+  const maxWidth = message
+    ? getReminderBannerWidthCap(message, normalizedSize, context)
+    : absoluteMax;
+
+  return {
+    '--reminder-banner-height': `${round(base.height * scale)}px`,
+    '--reminder-banner-padding-x': `${round(base.paddingX * scale)}px`,
+    '--reminder-banner-font-size': `${round(base.fontSize * scale)}px`,
+    '--reminder-banner-stripe': `${stripe}px`,
+    '--reminder-banner-stripe-double': `${stripe * 2}px`,
+    '--reminder-banner-min-width': `${round(base.minWidth * scale)}px`,
+    '--reminder-banner-max-width': `${maxWidth}px`,
+    '--reminder-banner-absolute-max-width': `${absoluteMax}px`,
+    '--reminder-banner-radius': `${round(base.borderRadius * scale)}px`,
+  } as CSSProperties;
+}
 
 export const FLIER_HEADS = [
   { id: 'duck', name: 'Duck', free: true, image: '/reminders/head.png', thumb: '/reminders/thumb-head.png', sound: 'quack' },

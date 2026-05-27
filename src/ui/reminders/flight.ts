@@ -2,7 +2,7 @@ import { DEFAULT_REMINDER_PREFS, getReminderColor, getReminderFont, getReminderH
 
 export const REMINDER_FLIGHT_REQUEST_KEY = 'roam-reminder-flight-request';
 export const REMINDER_FLIGHT_DURATION_MS = 9000;
-export const REMINDER_TEST_MESSAGE = 'Call with Beaudelaire in 5 minutes';
+export const REMINDER_TEST_MESSAGE = 'Call with Beaudelaire in 5 minutes Call with Beaudelaire in 5 minutes';
 export const REMINDER_BLADE_URL = '/reminders/blade.png';
 
 const SPEED_MULTIPLIERS = {
@@ -20,6 +20,7 @@ export interface ReminderFlightRequest {
   flierHead: string;
   flierColor: string;
   font: string;
+  bannerSize: string;
   soundPack: string;
 }
 
@@ -35,6 +36,7 @@ export function createReminderFlightRequest(prefs = DEFAULT_REMINDER_PREFS, mess
     flierHead: prefs.flierHead,
     flierColor: prefs.flierColor,
     font: prefs.font,
+    bannerSize: prefs.bannerSize,
     soundPack: prefs.soundPack,
   };
 }
@@ -49,6 +51,7 @@ export function normalizeReminderFlightRequest(value: Partial<ReminderFlightRequ
     flierHead: value.flierHead ?? DEFAULT_REMINDER_PREFS.flierHead,
     flierColor: value.flierColor ?? DEFAULT_REMINDER_PREFS.flierColor,
     font: value.font ?? DEFAULT_REMINDER_PREFS.font,
+    bannerSize: value.bannerSize ?? DEFAULT_REMINDER_PREFS.bannerSize,
     soundPack: value.soundPack ?? DEFAULT_REMINDER_PREFS.soundPack,
   };
 }

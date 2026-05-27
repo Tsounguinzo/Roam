@@ -58,6 +58,14 @@ function SettingsWindow() {
       tab: SettingsTabId.MyPets,
     },
     {
+      Component: RemindersTab,
+      title: t("Reminder Flights"),
+      description: t("Schedule fly-by reminders and design the avatar, plane, banner, text, and sound."),
+      Icon: <IconBellRinging size="1rem" />,
+      label: t('Reminders'),
+      tab: SettingsTabId.Reminders,
+    },
+    {
       Component: PetStoreTab,
       title: t("Store"),
       description: t("Discover companions and reminder cosmetics. Free items are ready now, and premium items can live here later."),
@@ -73,17 +81,12 @@ function SettingsWindow() {
       label: t('Preferences'),
       tab: SettingsTabId.Preferences,
     },
-    {
-      Component: RemindersTab,
-      title: t("Reminder Flights"),
-      description: t("Schedule fly-by reminders and design the avatar, plane, banner, text, and sound."),
-      Icon: <IconBellRinging size="1rem" />,
-      label: t('Reminders'),
-      tab: SettingsTabId.Reminders,
-    },
-  ]).sort((a, b) => a.tab - b.tab), [defaultPet.length, language, pets.length, t]);
-  const normalizedTab = settingsTabs[activeTab] ? activeTab : SettingsTabId.MyPets;
-  const CurrentSettingTab = settingsTabs[normalizedTab].Component;
+  ]), [defaultPet.length, language, pets.length, t]);
+  const activeTabDefinition = settingsTabs.find((definition) => definition.tab === activeTab)
+    ?? settingsTabs.find((definition) => definition.tab === SettingsTabId.MyPets)
+    ?? settingsTabs[0];
+  const resolvedTab = activeTabDefinition.tab;
+  const CurrentSettingTab = activeTabDefinition.Component;
   const handlePresentedByClick = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     const url = 'https://beaudelaire.ca';
@@ -125,7 +128,7 @@ function SettingsWindow() {
               >
                 {isNavCompact ? <IconChevronRight size={19} /> : <IconChevronLeft size={19} />}
               </button>
-              <SettingsSidebarNav activeTab={normalizedTab} tabs={settingsTabs} compact={isNavCompact} />
+              <SettingsSidebarNav activeTab={resolvedTab} tabs={settingsTabs} compact={isNavCompact} />
               <a
                 className={clsx('mt-auto flex items-baseline justify-center gap-1 whitespace-nowrap px-1.5 pb-0.5 pt-3.5 text-center font-note text-sm text-[var(--roam-muted)] no-underline transition-[color,transform] duration-[120ms] ease-in hover:rotate-[-1.2deg] hover:text-[var(--roam-brown)]', { hidden: isNavCompact })}
                 href="https://beaudelaire.ca"
@@ -142,8 +145,8 @@ function SettingsWindow() {
                 isNavCompact ? 'before:left-[104px]' : 'before:left-[262px]',
               )}
             >
-              <Box className="flex h-full w-full flex-col gap-6 overflow-y-auto py-[34px] pl-12 pr-10 pb-[42px] max-[720px]:px-[18px] max-[720px]:py-7" key={normalizedTab}>
-                <PageHeader title={settingsTabs[normalizedTab].title} description={settingsTabs[normalizedTab].description} />
+              <Box className="flex h-full w-full flex-col gap-6 overflow-y-auto py-[34px] pl-12 pr-10 pb-[42px] max-[720px]:px-[18px] max-[720px]:py-7" key={resolvedTab}>
+                <PageHeader title={activeTabDefinition.title} description={activeTabDefinition.description} />
                 <CurrentSettingTab />
               </Box>
             </Box>

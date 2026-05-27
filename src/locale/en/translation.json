@@ -153,5 +153,17 @@
     "No companions found": "No companions found",
     "No companions match search": "No companions match \"{{query}}\". Try a different name.",
     "Collapse navigation": "Collapse navigation",
-    "Expand navigation": "Expand navigation"
+    "Expand navigation": "Expand navigation",
+    "Reminder preferences": "Reminder preferences",
+    "General reminder behavior that is not tied to a single saved reminder.": "General reminder behavior that is not tied to a single saved reminder.",
+    "Reminder sound": "Reminder sound",
+    "Play sound during reminders and test flights": "Play sound during reminders and test flights",
+    "Banner size": "Banner size",
+    "How large the reminder banner appears during fly-bys": "How large the reminder banner appears during fly-bys",
+    "Small": "Small",
+    "Medium": "Medium",
+    "Large": "Large",
+    "Compact banner": "Compact banner",
+    "Balanced size": "Balanced size",
+    "Big banner text": "Big banner text"
 }

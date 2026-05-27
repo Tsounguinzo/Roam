@@ -91,5 +91,17 @@
   "No pets found": "没有找到宠物",
   "No pets match search": "没有宠物匹配“{{query}}”。请尝试其他名称。",
   "Collapse navigation": "折叠导航",
-  "Expand navigation": "展开导航"
+  "Expand navigation": "展开导航",
+  "Reminder preferences": "提醒偏好",
+  "General reminder behavior that is not tied to a single saved reminder.": "不针对单个已保存提醒的通用提醒行为。",
+  "Reminder sound": "提醒音效",
+  "Play sound during reminders and test flights": "在提醒和测试飞行时播放声音",
+  "Banner size": "横幅大小",
+  "How large the reminder banner appears during fly-bys": "提醒飞越时横幅的显示大小",
+  "Small": "小",
+  "Medium": "中",
+  "Large": "大",
+  "Compact banner": "紧凑横幅",
+  "Balanced size": "适中大小",
+  "Big banner text": "大号横幅文字"
 }

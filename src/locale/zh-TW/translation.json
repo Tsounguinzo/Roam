@@ -92,5 +92,17 @@
   "No pets found": "沒有找到寵物",
   "No pets match search": "沒有寵物符合「{{query}}」。請嘗試其他名稱。",
   "Collapse navigation": "摺疊導覽",
-  "Expand navigation": "展開導覽"
+  "Expand navigation": "展開導覽",
+  "Reminder preferences": "提醒偏好",
+  "General reminder behavior that is not tied to a single saved reminder.": "不針對單一已儲存提醒的通用提醒行為。",
+  "Reminder sound": "提醒音效",
+  "Play sound during reminders and test flights": "在提醒與測試飛行時播放聲音",
+  "Banner size": "橫幅大小",
+  "How large the reminder banner appears during fly-bys": "提醒飛越時橫幅的顯示大小",
+  "Small": "小",
+  "Medium": "中",
+  "Large": "大",
+  "Compact banner": "精簡橫幅",
+  "Balanced size": "適中大小",
+  "Big banner text": "大型橫幅文字"
 }

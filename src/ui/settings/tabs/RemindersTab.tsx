@@ -23,6 +23,7 @@ import {
   FLIER_HEADS,
   FONT_OPTIONS,
   LEAD_OPTIONS,
+  getReminderBannerSizeStyle,
   readReminderPrefs,
   SOUND_OPTIONS,
   SPEED_OPTIONS,
@@ -38,6 +39,7 @@ import {
   resolveReminderFlightAssets,
   type ReminderFlightRequest,
 } from '../../reminders/flight';
+import ReminderBanner from '../../reminders/ReminderBanner';
 import SectionCard from '../layout/SectionCard';
 import { SettingsTabId } from '../../../types/ISetting';
 import {
@@ -177,7 +179,10 @@ function RemindersTab() {
     return () => window.removeEventListener(REMINDER_OWNED_ITEMS_CHANGED, handleOwnedItemsChanged);
   }, []);
 
-  const flightAssets = resolveReminderFlightAssets(createReminderFlightRequest(prefs, prefs.messageTemplate.replaceAll('{title}', 'Meeting').replaceAll('{minutes}', String(prefs.leadMinutes))));
+  const previewMessage = prefs.messageTemplate
+    .replaceAll('{title}', 'Meeting')
+    .replaceAll('{minutes}', String(prefs.leadMinutes));
+  const flightAssets = resolveReminderFlightAssets(createReminderFlightRequest(prefs, previewMessage));
   const { theme, head, color, font } = flightAssets;
 
   const updatePrefs = useCallback((patch: Partial<ReminderPrefs>) => {
@@ -408,11 +413,14 @@ function RemindersTab() {
                   '--reminder-stripe-b': theme.b,
                   '--reminder-banner-text': theme.text,
                   '--reminder-banner-font': font.stack,
+                  ...getReminderBannerSizeStyle(prefs.bannerSize, 'preview', previewMessage),
                 } as CSSProperties}
               >
-                <Box className="reminder-banner">
-                  <span>{prefs.messageTemplate.replaceAll('{title}', 'Meeting').replaceAll('{minutes}', String(prefs.leadMinutes))}</span>
-                </Box>
+                <ReminderBanner
+                  className="reminder-banner"
+                  message={previewMessage}
+                  layoutKey={`${prefs.bannerSize}:${previewMessage}:${font.id}`}
+                />
                 <Box className="reminder-rope" />
                 <Box className="reminder-flier">
                   <img key={color.id} className="reminder-plane-body" src={color.base} alt="" />

@@ -10,7 +10,7 @@ import { invoke } from "@tauri-apps/api/core";
 import SettingActionRow from "./preferences/SettingActionRow";
 import { DispatchType } from "../../../types/IEvents";
 import SectionCard from "../layout/SectionCard";
-import { readReminderPrefs, updateReminderPrefs } from "./reminders/options";
+import { BANNER_SIZE_OPTIONS, readReminderPrefs, updateReminderPrefs, type ReminderBannerSize } from "./reminders/options";
 
 interface PreferencesToggleItem {
     title: string,
@@ -24,6 +24,7 @@ function PreferencesTab() {
     const { t, i18n } = useTranslation();
     const { allowAutoStartUp, allowPetAboveTaskbar, allowPetInteraction, allowOverridePetScale, petScale, allowPetClimbing } = useSettingStore();
     const [reminderSoundEnabled, setReminderSoundEnabled] = useState(() => readReminderPrefs().soundEnabled);
+    const [bannerSize, setBannerSize] = useState<ReminderBannerSize>(() => readReminderPrefs().bannerSize);
 
     const appSwitches: PreferencesToggleItem[] = [
         {
@@ -79,6 +80,10 @@ function PreferencesTab() {
         updateReminderPrefs({ soundEnabled: enabled });
         setReminderSoundEnabled(enabled);
     }, []);
+    const handleBannerSizeChange = useCallback((size: ReminderBannerSize) => {
+        updateReminderPrefs({ bannerSize: size });
+        setBannerSize(size);
+    }, []);
 
     return (
         <Box className="flex flex-col gap-[18px]">
@@ -123,12 +128,31 @@ function PreferencesTab() {
                 title={t("Reminder preferences")}
                 description={t("General reminder behavior that is not tied to a single saved reminder.")}
             >
-                <Box className="flex items-center justify-between gap-[18px] px-4 py-[18px] max-[760px]:items-start">
+                <Box className="flex items-center justify-between gap-[18px] border-b-2 border-dashed border-[rgba(32,38,47,0.14)] px-4 py-[18px] max-[760px]:items-start">
                     <Box className="max-w-[620px]">
                         <Text className="font-note text-[19px] font-normal text-[var(--roam-ink)]">{t("Reminder sound")}</Text>
                         <Text className="mt-1 text-[0.92rem] leading-normal text-[var(--roam-muted)]">{t("Play sound during reminders and test flights")}</Text>
                     </Box>
                     <Switch size={"lg"} checked={reminderSoundEnabled} onChange={(event) => handleReminderSoundChange(event.currentTarget.checked)} />
+                </Box>
+                <Box className="px-4 py-[18px]">
+                    <Box className="max-w-[620px]">
+                        <Text className="font-note text-[19px] font-normal text-[var(--roam-ink)]">{t("Banner size")}</Text>
+                        <Text className="mt-1 text-[0.92rem] leading-normal text-[var(--roam-muted)]">{t("How large the reminder banner appears during fly-bys")}</Text>
+                    </Box>
+                    <Box className="mt-4 grid grid-cols-3 gap-2.5 max-[720px]:grid-cols-1">
+                        {BANNER_SIZE_OPTIONS.map((size) => (
+                            <button
+                                key={size.value}
+                                type="button"
+                                className={`reminder-choice ${bannerSize === size.value ? 'reminder-choice-selected' : ''}`}
+                                onClick={() => handleBannerSizeChange(size.value)}
+                            >
+                                <span>{t(size.label)}</span>
+                                <small>{t(size.description)}</small>
+                            </button>
+                        ))}
+                    </Box>
                 </Box>
             </SectionCard>
         </Box>
