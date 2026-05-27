@@ -69,6 +69,49 @@ function startEngine(ctx: AudioContext, durationSeconds: number) {
   lfo.stop(stopAt);
 }
 
+function BannerWaveFilter() {
+  return (
+    <svg className="reminder-banner-filters" aria-hidden="true" width="0" height="0">
+      <defs>
+        <filter id="banner-wave" x="-20%" y="-60%" width="140%" height="220%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.009 0.018" numOctaves="1" seed="7" result="noise" />
+          <feOffset in="noise" dx="0" dy="0" result="noiseShift">
+            <animate
+              attributeName="dx"
+              dur="3.2s"
+              values="0;72;0"
+              calcMode="spline"
+              keyTimes="0;0.5;1"
+              keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="dy"
+              dur="2.4s"
+              values="0;12;0"
+              calcMode="spline"
+              keyTimes="0;0.5;1"
+              keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
+              repeatCount="indefinite"
+            />
+          </feOffset>
+          <feDisplacementMap in="SourceGraphic" in2="noiseShift" scale="10" xChannelSelector="R" yChannelSelector="G">
+            <animate
+              attributeName="scale"
+              dur="2.2s"
+              values="8;14;8"
+              calcMode="spline"
+              keyTimes="0;0.5;1"
+              keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
+              repeatCount="indefinite"
+            />
+          </feDisplacementMap>
+        </filter>
+      </defs>
+    </svg>
+  );
+}
+
 function ReminderFlightOverlay() {
   const [flight, setFlight] = useState<ReminderFlightRequest | null>(null);
   const [prefs, setPrefs] = useState(readPrefs);
@@ -203,6 +246,7 @@ function ReminderFlightOverlay() {
 
   return (
     <div className="reminder-flight-overlay" aria-hidden="true">
+      <BannerWaveFilter />
       <div
         key={flight.id}
         className="reminder-flight-rig"
@@ -217,8 +261,8 @@ function ReminderFlightOverlay() {
         <div className="reminder-flight-banner"><span>{flight.message}</span></div>
         <div className="reminder-flight-rope" />
         <div className="reminder-flight-aircraft">
-          <img className="reminder-flight-plane" src={color.base} alt="" />
-          <img className="reminder-flight-head" src={head.image} alt="" />
+          <img key={color.id} className="reminder-flight-plane" src={color.base} alt="" />
+          <img key={head.id} className="reminder-flight-head" src={head.image} alt="" />
           <img className="reminder-flight-blade" src={REMINDER_BLADE_URL} alt="" />
         </div>
       </div>

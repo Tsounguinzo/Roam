@@ -5,6 +5,12 @@ export const REMINDER_FLIGHT_DURATION_MS = 9000;
 export const REMINDER_TEST_MESSAGE = 'Call with Jack in 5 minutes';
 export const REMINDER_BLADE_URL = '/reminders/blade.png';
 
+const SPEED_MULTIPLIERS = {
+  normal: 1,
+  fast: 1.5,
+  ultra: 2,
+} as const;
+
 export interface ReminderFlightRequest {
   id: string;
   message: string;
@@ -18,10 +24,12 @@ export interface ReminderFlightRequest {
 }
 
 export function createReminderFlightRequest(prefs = DEFAULT_REMINDER_PREFS, message = REMINDER_TEST_MESSAGE): ReminderFlightRequest {
+  const speedMultiplier = SPEED_MULTIPLIERS[prefs.speed] ?? SPEED_MULTIPLIERS.normal;
+
   return {
     id: crypto.randomUUID(),
     message,
-    durationMs: REMINDER_FLIGHT_DURATION_MS,
+    durationMs: Math.round(REMINDER_FLIGHT_DURATION_MS / speedMultiplier),
     soundEnabled: prefs.soundEnabled,
     theme: prefs.theme,
     flierHead: prefs.flierHead,

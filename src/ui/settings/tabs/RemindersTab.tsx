@@ -4,25 +4,20 @@ import {
   Box,
   Button,
   Group,
-  NativeSelect,
-  SegmentedControl,
   Switch,
   Text,
   TextInput,
 } from '@mantine/core';
 import {
-  IconCalendar,
   IconClock,
   IconLock,
-  IconLink,
   IconPalette,
   IconPlayerPlay,
   IconPlus,
-  IconRefresh,
   IconTrash,
   IconVolume,
 } from '@tabler/icons-react';
-import { memo, useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { memo, useCallback, useEffect, useState, type CSSProperties } from 'react';
 import {
   BANNER_THEMES,
   DEFAULT_REMINDER_PREFS,
@@ -92,11 +87,65 @@ function playTestSound(request: ReminderFlightRequest) {
   }
 }
 
+function playSoundPreview(url: string | undefined) {
+  if (!url) return;
+
+  try {
+    const audio = new Audio(url);
+    audio.volume = 0.9;
+    void audio.play();
+  } catch {
+    /* sound previews are best-effort */
+  }
+}
+
+function BannerWaveFilter() {
+  return (
+    <svg className="reminder-banner-filters" aria-hidden="true" width="0" height="0">
+      <defs>
+        <filter id="banner-wave" x="-20%" y="-60%" width="140%" height="220%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.009 0.018" numOctaves="1" seed="7" result="noise" />
+          <feOffset in="noise" dx="0" dy="0" result="noiseShift">
+            <animate
+              attributeName="dx"
+              dur="3.2s"
+              values="0;72;0"
+              calcMode="spline"
+              keyTimes="0;0.5;1"
+              keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="dy"
+              dur="2.4s"
+              values="0;12;0"
+              calcMode="spline"
+              keyTimes="0;0.5;1"
+              keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
+              repeatCount="indefinite"
+            />
+          </feOffset>
+          <feDisplacementMap in="SourceGraphic" in2="noiseShift" scale="10" xChannelSelector="R" yChannelSelector="G">
+            <animate
+              attributeName="scale"
+              dur="2.2s"
+              values="8;14;8"
+              calcMode="spline"
+              keyTimes="0;0.5;1"
+              keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
+              repeatCount="indefinite"
+            />
+          </feDisplacementMap>
+        </filter>
+      </defs>
+    </svg>
+  );
+}
+
 function RemindersTab() {
   const [prefs, setPrefs] = useState(readPrefs);
   const [reminderTitle, setReminderTitle] = useState('Meeting');
   const [reminderStartsAt, setReminderStartsAt] = useState(() => formatDateTimeLocal(new Date(Date.now() + 30 * 60_000)));
-  const [calendarLink, setCalendarLink] = useState('');
   const [appearancePanel, setAppearancePanel] = useState<AppearancePanel>('flier');
 
   const sendFlightRequest = useCallback((request: ReminderFlightRequest) => {
@@ -142,24 +191,11 @@ function RemindersTab() {
     }));
   }, []);
 
-  const addCalendarLink = useCallback(() => {
-    const nextLink = calendarLink.trim();
-    if (!nextLink) return;
-
-    setPrefs((current) => ({
-      ...current,
-      calendarLinks: current.calendarLinks.includes(nextLink) ? current.calendarLinks : [nextLink, ...current.calendarLinks],
-    }));
-    setCalendarLink('');
-  }, [calendarLink]);
-
   const testFlight = useCallback(() => {
     const request = createReminderFlightRequest(prefs, REMINDER_TEST_MESSAGE);
     playTestSound(request);
     sendFlightRequest(request);
   }, [prefs, sendFlightRequest]);
-
-  const leadData = useMemo(() => LEAD_OPTIONS.map((minutes) => ({ label: `${minutes} min`, value: String(minutes) })), []);
 
   return (
     <Box className="flex flex-col gap-5">
@@ -171,14 +207,71 @@ function RemindersTab() {
       <Box className="grid grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] gap-5 max-[1040px]:grid-cols-1">
         <Box className="flex flex-col gap-5">
           <section className="rounded-[var(--roam-wobble-a)] border-[2.5px] border-solid border-[var(--roam-ink)] bg-[var(--roam-card)] p-5 shadow-[var(--roam-shadow)]">
-            <Group justify="space-between" align="center" mb="md">
-              <Box>
-                <Text className="font-note text-[24px] text-[var(--roam-ink)]">Reminders</Text>
-                <Text className="text-sm text-[var(--roam-muted)]">Create local fly-by reminders and control what the banner says.</Text>
-              </Box>
-            </Group>
+            <Text className="font-note text-[24px] text-[var(--roam-ink)]">Reminders</Text>
 
-            <Box className="grid grid-cols-[1fr_190px_auto] gap-3 max-[860px]:grid-cols-1">
+            <Box className="mt-4">
+              <Text className="font-note text-lg leading-none text-[var(--roam-ink)]">Lead time</Text>
+              <Text className="mt-1 text-sm text-[var(--roam-muted)]">Fly this long before a meeting</Text>
+              <Box className="mt-3 grid grid-cols-3 gap-2.5 max-[720px]:grid-cols-1">
+                {LEAD_OPTIONS.map((minutes) => (
+                  <button
+                    key={minutes}
+                    type="button"
+                    className={`reminder-choice reminder-choice-large ${prefs.leadMinutes === minutes ? 'reminder-choice-selected' : ''}`}
+                    onClick={() => updatePrefs({ leadMinutes: minutes })}
+                  >
+                    <span>{minutes} min</span>
+                  </button>
+                ))}
+              </Box>
+            </Box>
+
+            <Box className="reminder-dashed-separator" />
+
+            <Box className="flex items-center justify-between gap-5 max-[720px]:items-start">
+              <Box>
+                <Text className="font-note text-lg leading-none text-[var(--roam-ink)]">Fly again at meeting time</Text>
+                <Text className="mt-1 text-sm text-[var(--roam-muted)]">A second fly-by right when it starts</Text>
+              </Box>
+              <Switch
+                checked={prefs.flyAtStart}
+                onChange={(event) => updatePrefs({ flyAtStart: event.currentTarget.checked })}
+              />
+            </Box>
+
+            <Box className="reminder-dashed-separator" />
+
+            <Box>
+              <Text className="font-note text-lg leading-none text-[var(--roam-ink)]">Banner message</Text>
+              <Text className="mt-1 text-sm text-[var(--roam-muted)]">Tap a tag to insert it</Text>
+              <TextInput
+                className="mt-3 max-w-[620px]"
+                value={prefs.messageTemplate}
+                onChange={(event) => updatePrefs({ messageTemplate: event.currentTarget.value })}
+              />
+              <Group gap="xs" mt="xs">
+                {[
+                  ['title', '{title}'],
+                  ['minutes', '{minutes}'],
+                ].map(([label, token]) => (
+                  <button
+                    key={token}
+                    type="button"
+                    className="reminder-token-button"
+                    onClick={() => updatePrefs({ messageTemplate: `${prefs.messageTemplate}${token}` })}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </Group>
+            </Box>
+          </section>
+
+          <section className="rounded-[var(--roam-wobble-b)] border-[2.5px] border-solid border-[var(--roam-ink)] bg-[var(--roam-card)] p-5 shadow-[var(--roam-shadow)]">
+            <Text className="font-note text-[24px] text-[var(--roam-ink)]">Manual reminders</Text>
+            <Text className="text-sm text-[var(--roam-muted)]">Create local fly-by reminders while calendar sync is hidden.</Text>
+
+            <Box className="mt-4 grid grid-cols-[1fr_190px_auto] gap-3 max-[860px]:grid-cols-1">
               <TextInput label="Title" value={reminderTitle} onChange={(event) => setReminderTitle(event.currentTarget.value)} />
               <TextInput
                 label="Starts at"
@@ -189,37 +282,6 @@ function RemindersTab() {
               <Button className="self-end max-[860px]:self-auto" leftSection={<IconPlus size={16} />} onClick={addReminder}>
                 Add
               </Button>
-            </Box>
-
-            <Box className="mt-4 grid grid-cols-[170px_1fr] gap-4 max-[720px]:grid-cols-1">
-              <Box>
-                <Text className="mb-2 font-note text-lg">Lead time</Text>
-                <SegmentedControl
-                  fullWidth
-                  data={leadData}
-                  value={String(prefs.leadMinutes)}
-                  onChange={(value) => updatePrefs({ leadMinutes: Number(value) })}
-                />
-              </Box>
-              <Box>
-                <TextInput
-                  label="Banner message"
-                  value={prefs.messageTemplate}
-                  onChange={(event) => updatePrefs({ messageTemplate: event.currentTarget.value })}
-                />
-                <Group gap="xs" mt="xs">
-                  {['{title}', '{minutes}'].map((token) => (
-                    <Button
-                      key={token}
-                      size="compact-sm"
-                      variant="light"
-                      onClick={() => updatePrefs({ messageTemplate: `${prefs.messageTemplate}${token}` })}
-                    >
-                      {token}
-                    </Button>
-                  ))}
-                </Group>
-              </Box>
             </Box>
 
             <Box className="mt-4 flex flex-col gap-2">
@@ -252,90 +314,41 @@ function RemindersTab() {
 
           <section className="rounded-[var(--roam-wobble-b)] border-[2.5px] border-solid border-[var(--roam-ink)] bg-[var(--roam-card)] p-5 shadow-[var(--roam-shadow)]">
             <Text className="font-note text-[24px] text-[var(--roam-ink)]">Flight</Text>
-            <Box className="mt-4 grid grid-cols-2 gap-4 max-[720px]:grid-cols-1">
+            <Box className="mt-4 flex flex-col gap-4">
               <Box>
-                <Text className="mb-2 font-note text-lg">Speed</Text>
-                <SegmentedControl
-                  fullWidth
-                  data={SPEED_OPTIONS.map((speed) => ({ value: speed.value, label: speed.label }))}
-                  value={prefs.speed}
-                  onChange={(value) => updatePrefs({ speed: value as ReminderPrefs['speed'] })}
+                <Box className="mb-2 flex items-baseline justify-between gap-3">
+                  <Text className="font-note text-lg">Speed</Text>
+                  <Text className="text-xs text-[var(--roam-muted)]">How fast the plane crosses the screen</Text>
+                </Box>
+                <Box className="grid grid-cols-3 gap-2.5 max-[720px]:grid-cols-1">
+                  {SPEED_OPTIONS.map((speed) => (
+                    <button
+                      key={speed.value}
+                      type="button"
+                      className={`reminder-choice ${prefs.speed === speed.value ? 'reminder-choice-selected' : ''}`}
+                      onClick={() => updatePrefs({ speed: speed.value })}
+                    >
+                      <span>{speed.label}</span>
+                      <small>{speed.description}</small>
+                    </button>
+                  ))}
+                </Box>
+              </Box>
+              <Box className="h-px bg-[rgba(32,38,47,0.14)]" />
+              <Box className="grid gap-4">
+                <Switch
+                  label="Fly again at meeting time"
+                  description="Send a second fly-by right when it starts"
+                  checked={prefs.flyAtStart}
+                  onChange={(event) => updatePrefs({ flyAtStart: event.currentTarget.checked })}
+                />
+                <Switch
+                  label="Engine sound"
+                  description="Play sound during reminders and test flights"
+                  checked={prefs.soundEnabled}
+                  onChange={(event) => updatePrefs({ soundEnabled: event.currentTarget.checked })}
                 />
               </Box>
-              <NativeSelect
-                label="Show on"
-                value={prefs.targetDisplay}
-                onChange={(event) => updatePrefs({ targetDisplay: event.currentTarget.value as ReminderPrefs['targetDisplay'] })}
-                data={[
-                  { value: 'cursor', label: 'Screen with my cursor' },
-                  { value: 'primary', label: 'Main screen' },
-                ]}
-              />
-              <Switch
-                label="Fly again at meeting time"
-                description="Send a second fly-by right when it starts"
-                checked={prefs.flyAtStart}
-                onChange={(event) => updatePrefs({ flyAtStart: event.currentTarget.checked })}
-              />
-              <Switch
-                label="Engine sound"
-                description="Play sound during reminders and test flights"
-                checked={prefs.soundEnabled}
-                onChange={(event) => updatePrefs({ soundEnabled: event.currentTarget.checked })}
-              />
-              <Switch
-                label="Launch at login"
-                checked={prefs.launchAtLogin}
-                onChange={(event) => updatePrefs({ launchAtLogin: event.currentTarget.checked })}
-              />
-              <Switch
-                label="Stay signed in"
-                description="Keep calendar links in local preferences"
-                checked={prefs.staySignedIn}
-                onChange={(event) => updatePrefs({ staySignedIn: event.currentTarget.checked })}
-              />
-            </Box>
-          </section>
-
-          <section className="rounded-[var(--roam-wobble-a)] border-[2.5px] border-solid border-[var(--roam-ink)] bg-[var(--roam-card)] p-5 shadow-[var(--roam-shadow)]">
-            <Group justify="space-between" align="center" mb="md">
-              <Box>
-                <Text className="font-note text-[24px] text-[var(--roam-ink)]">Calendar</Text>
-                <Text className="text-sm text-[var(--roam-muted)]">Store iCal links locally and use manual reminders while provider sync is wired in.</Text>
-              </Box>
-              <ActionIcon variant="light" aria-label="Refresh calendar preview">
-                <IconRefresh size={18} />
-              </ActionIcon>
-            </Group>
-            <Box className="grid grid-cols-[1fr_auto] gap-3 max-[720px]:grid-cols-1">
-              <TextInput
-                leftSection={<IconLink size={16} />}
-                label="Calendar link"
-                placeholder="https://example.com/calendar.ics"
-                value={calendarLink}
-                onChange={(event) => setCalendarLink(event.currentTarget.value)}
-              />
-              <Button className="self-end max-[720px]:self-auto" leftSection={<IconCalendar size={16} />} onClick={addCalendarLink}>
-                Add link
-              </Button>
-            </Box>
-            <Box className="mt-4 flex flex-col gap-2">
-              {prefs.calendarLinks.length === 0 ? (
-                <Text className="text-sm text-[var(--roam-muted)]">No calendar links connected.</Text>
-              ) : (
-                prefs.calendarLinks.map((link) => (
-                  <Box key={link} className="flex items-center justify-between gap-3 rounded-[var(--roam-wobble-b)] border-2 border-solid border-[var(--roam-ink)] bg-[var(--roam-paper)] px-3 py-2">
-                    <Text className="min-w-0 truncate text-sm">{link}</Text>
-                    <ActionIcon
-                      variant="light"
-                      aria-label="Remove calendar link"
-                      onClick={() => updatePrefs({ calendarLinks: prefs.calendarLinks.filter((item) => item !== link) })}
-                    >
-                      <IconTrash size={16} />
-                    </ActionIcon>
-                  </Box>
-                ))
-              )}
             </Box>
           </section>
         </Box>
@@ -343,6 +356,7 @@ function RemindersTab() {
         <Box className="flex flex-col gap-5">
           <section className="overflow-hidden rounded-[var(--roam-wobble-a)] border-[2.5px] border-solid border-[var(--roam-ink)] bg-[var(--roam-card)] shadow-[var(--roam-shadow)]">
             <Box className="reminder-preview">
+              <BannerWaveFilter />
               <Box
                 className="reminder-preview-rig"
                 style={{
@@ -357,8 +371,8 @@ function RemindersTab() {
                 </Box>
                 <Box className="reminder-rope" />
                 <Box className="reminder-flier">
-                  <img className="reminder-plane-body" src={color.base} alt="" />
-                  <img className="reminder-head" src={head.image} alt="" />
+                  <img key={color.id} className="reminder-plane-body" src={color.base} alt="" />
+                  <img key={head.id} className="reminder-head" src={head.image} alt="" />
                   <img className="reminder-blade" src={REMINDER_BLADE_URL} alt="" />
                 </Box>
               </Box>
@@ -406,7 +420,11 @@ function RemindersTab() {
                         key={item.id}
                         type="button"
                         className={`reminder-swatch reminder-swatch-large ${prefs.flierHead === item.id ? 'reminder-swatch-selected' : ''} ${locked ? 'reminder-swatch-locked' : ''}`}
-                        onClick={() => !locked && updatePrefs({ flierHead: item.id, soundPack: item.sound })}
+                        onClick={() => {
+                          if (locked) return;
+                          updatePrefs({ flierHead: item.id, soundPack: item.sound });
+                          playSoundPreview(SOUND_OPTIONS.find((sound) => sound.id === item.sound)?.url);
+                        }}
                       >
                         <span className="reminder-lock">{locked && <IconLock size={16} />}</span>
                         <span className="reminder-swatch-art">
@@ -487,7 +505,11 @@ function RemindersTab() {
                       key={item.id}
                       type="button"
                       className={`reminder-swatch ${prefs.soundPack === item.id ? 'reminder-swatch-selected' : ''} ${locked ? 'reminder-swatch-locked' : ''}`}
-                      onClick={() => !locked && updatePrefs({ soundPack: item.id })}
+                      onClick={() => {
+                        if (locked) return;
+                        updatePrefs({ soundPack: item.id });
+                        playSoundPreview(item.url);
+                      }}
                     >
                       <span className="reminder-lock">{locked && <IconLock size={16} />}</span>
                       <IconVolume size={24} />
