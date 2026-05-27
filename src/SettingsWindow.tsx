@@ -1,7 +1,8 @@
 import { Box } from '@mantine/core';
 import {
+  IconChevronLeft,
+  IconChevronRight,
   IconCat,
-  IconInfoCircle,
   IconSettings,
   IconBuildingStore,
   IconPaw,
@@ -10,19 +11,21 @@ import SettingsSidebarNav from './ui/settings/navigation/SettingsSidebarNav';
 import { useTranslation } from 'react-i18next';
 import { useSettingStore } from './hooks/useSettingStore';
 import { SettingsTabDefinition, SettingsTabId } from './types/ISetting';
-import { memo, useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo, useState, type MouseEvent } from 'react';
+import clsx from 'clsx';
 import MyPetsTab from './ui/settings/tabs/MyPetsTab';
 import PetStoreTab from './ui/settings/tabs/PetStoreTab';
 import PreferencesTab from './ui/settings/tabs/PreferencesTab';
 import { useSettingTabStore } from './hooks/useSettingTabStore';
 import PageHeader from './ui/settings/layout/PageHeader';
 import { Notifications } from '@mantine/notifications';
-import AboutTab from './ui/settings/tabs/AboutTab';
 import useQueryParams from './hooks/useQueryParams';
 import { ModalsProvider } from '@mantine/modals';
 import useInit from './hooks/useInit';
 import { checkForUpdate } from './utils/update';
 import AddCustomPetTab from './ui/settings/tabs/AddCustomPetTab';
+import { open } from '@tauri-apps/plugin-shell';
+import { isTauriRuntime } from './utils/runtime';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 import classes from './SettingsWindow.module.css';
@@ -32,6 +35,7 @@ function SettingsWindow() {
   const { t } = useTranslation();
   const queryParams = useQueryParams();
   const { activeTab, setActiveTab } = useSettingTabStore();
+  const [isNavCompact, setIsNavCompact] = useState(() => localStorage.getItem('settings-nav-compact') === 'true');
 
   // check for update when open settings window
   useInit(() => {
@@ -44,7 +48,7 @@ function SettingsWindow() {
       setActiveTab(Number(queryParams.get('tab')));
     }
   }, [activeTab, queryParams, setActiveTab]);
-  
+
   const settingsTabs: SettingsTabDefinition[] = useMemo(() => ([
     {
       Component: MyPetsTab,
@@ -78,26 +82,58 @@ function SettingsWindow() {
       label: t('Settings'),
       tab: SettingsTabId.Preferences,
     },
-    {
-      Component: AboutTab,
-      title: '',
-      description: '',
-      Icon: <IconInfoCircle size="1rem" />,
-      label: t('About'),
-      tab: SettingsTabId.About,
-    },
   ]), [defaultPet.length, language, pets.length, t]);
   const normalizedTab = settingsTabs[activeTab] ? activeTab : SettingsTabId.MyPets;
   const CurrentSettingTab = settingsTabs[normalizedTab].Component;
+  const handlePresentedByClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    const url = 'https://beaudelaire.ca';
+
+    if (isTauriRuntime()) {
+      open(url);
+      return;
+    }
+
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+  const handleToggleNavigation = () => {
+    setIsNavCompact((currentValue) => {
+      const nextValue = !currentValue;
+      localStorage.setItem('settings-nav-compact', String(nextValue));
+      return nextValue;
+    });
+  };
 
   return (
     <>
       <Notifications position={'top-center'} limit={2} />
       <ModalsProvider>
         <Box className={classes.viewport}>
-          <Box className={classes.window}>
+          <Box className={clsx(classes.window, { [classes.compact]: isNavCompact })}>
             <Box component="aside" className={classes.sidebar}>
-              <SettingsSidebarNav activeTab={normalizedTab} tabs={settingsTabs} />
+              <Box className={classes.brand}>
+                <img className={classes.brandLogo} src="/app-icon.png" alt="" />
+                <Box className={classes.brandText}>
+                  <span>Roam</span>
+                </Box>
+              </Box>
+              <button
+                className={classes.navToggle}
+                type="button"
+                onClick={handleToggleNavigation}
+                aria-label={isNavCompact ? t('Expand navigation') : t('Collapse navigation')}
+                title={isNavCompact ? t('Expand navigation') : t('Collapse navigation')}
+              >
+                {isNavCompact ? <IconChevronRight size={19} /> : <IconChevronLeft size={19} />}
+              </button>
+              <SettingsSidebarNav activeTab={normalizedTab} tabs={settingsTabs} compact={isNavCompact} />
+              <a
+                className={classes.presentedBy}
+                href="https://beaudelaire.ca"
+                onClick={handlePresentedByClick}
+              >
+                Presented by <b>Beaudelaire</b>
+              </a>
             </Box>
 
             <Box component="main" className={classes.main}>

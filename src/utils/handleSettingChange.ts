@@ -1,5 +1,4 @@
 import { setSettings, toggleAutoStartUp } from "./settings";
-import { ColorScheme } from "../types/ISetting";
 import { useSettingStore } from "../hooks/useSettingStore";
 import { emitUpdatePetsEvent } from "./event";
 import i18next from "i18next";
@@ -19,7 +18,6 @@ export const handleSettingChange: IHandleSettingChange = (
 ) => {
     const {
         setLanguage,
-        setTheme,
         setAllowAutoStartUp,
         setAllowPetAboveTaskbar,
         setAllowPetInteraction,
@@ -36,11 +34,6 @@ export const handleSettingChange: IHandleSettingChange = (
             setLanguage(newValue as string);
             i18next.changeLanguage(newValue as string);
             localStorage.setItem("language", newValue as string);
-            return;
-        case DispatchType.ChangeAppTheme:
-            setSettings({ setKey: "theme", newValue: newValue });
-            setTheme(newValue as ColorScheme);
-            localStorage.setItem("theme", newValue as string);
             return;
         case DispatchType.SwitchAutoWindowStartUp:
             // auto start up doesn't need to be saved in settings.json

@@ -1,9 +1,7 @@
-import { ColorScheme } from "../ISetting";
 import { ISpriteConfig } from "../ISpriteConfig";
 
 export interface ISettingStoreVariables {
     language: string;
-    theme: ColorScheme;
     allowPetAboveTaskbar: boolean;
     allowAutoStartUp: boolean;
     allowPetInteraction: boolean;
@@ -16,7 +14,6 @@ export interface ISettingStoreVariables {
 
 export interface ISettingStoreState extends ISettingStoreVariables{
     setLanguage: (newLanguage: string) => void;
-    setTheme: (newTheme: ColorScheme) => void;
     setAllowPetAboveTaskbar: (newBoolean: boolean) => void;
     setAllowAutoStartUp: (newBoolean: boolean) => void;
     setAllowPetInteraction: (newBoolean: boolean) => void;

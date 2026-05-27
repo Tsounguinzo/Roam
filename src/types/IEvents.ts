@@ -19,7 +19,6 @@ export enum EventType {
 
 export enum DispatchType {
     ChangeAppLanguage = 'Change app language',
-    ChangeAppTheme = 'Change app theme',
     SwitchAutoWindowStartUp = 'Switch auto window start up',
     SwitchPetAboveTaskbar = 'Switch pet above taskbar',
     SwitchAllowPetInteraction = 'Switch allow pet interaction',

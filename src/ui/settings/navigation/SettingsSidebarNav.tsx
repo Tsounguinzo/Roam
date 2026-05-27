@@ -4,7 +4,7 @@ import { SettingsSidebarNavProps } from '../types';
 import { useSettingTabStore } from '../../../hooks/useSettingTabStore';
 import { useSearchParams } from 'react-router-dom';
 
-function SettingsSidebarNav({ activeTab, tabs }: SettingsSidebarNavProps) {
+function SettingsSidebarNav({ activeTab, tabs, compact }: SettingsSidebarNavProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const { setActiveTab } = useSettingTabStore();
 
@@ -22,6 +22,7 @@ function SettingsSidebarNav({ activeTab, tabs }: SettingsSidebarNavProps) {
       Icon={tabDefinition.Icon}
       key={tabDefinition.label}
       active={tabDefinition.tab === activeTab}
+      compact={compact}
       onSelect={() => handleSetTab(tabDefinition.tab)}
     />
   ));

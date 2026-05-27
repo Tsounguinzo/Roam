@@ -261,7 +261,7 @@ function AddCustomPetTab() {
                         <Group justify="right">
                             <Button
                                 variant={ButtonVariant}
-                                color="red"
+                                color={PrimaryColor}
                                 leftSection={<IconTrash />}
                                 disabled={petInfo.states.length === 1}
                                 onClick={() => removeStateAtIndex(index)}
@@ -335,7 +335,7 @@ function AddCustomPetTab() {
                                 notifications.show({
                                     message: t("Pet cannot be added, try to verify your pet information again such as image path, frame size, all state name, start and end frame"),
                                     title: t("Error: Pet cannot be added"),
-                                    color: "red",
+                                    color: PrimaryColor,
                                     icon: <IconExclamationCircle size="1rem" />,
                                     withBorder: true,
                                     autoClose: 3000,

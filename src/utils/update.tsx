@@ -5,8 +5,11 @@ import Updater from '../ui/pop_up/Updater';
 import { info, error } from "@tauri-apps/plugin-log";
 import { ButtonVariant } from '.';
 import i18next from 'i18next';
+import { isTauriRuntime } from './runtime';
 
 export const checkForUpdate = async () => {
+  if (!isTauriRuntime()) return false;
+
   info('Checking for update');
   try {
     const manifest = await check()
@@ -19,7 +22,7 @@ export const checkForUpdate = async () => {
         title: i18next.t('Update available'),
         children: <Updater shouldUpdate={shouldUpdate} manifest={manifest} />,
         confirmProps: { variant: ButtonVariant },
-        cancelProps: { variant: ButtonVariant, color: 'red' },
+        cancelProps: { variant: ButtonVariant, color: 'brand' },
         labels: { confirm: i18next.t('Yes'), cancel: i18next.t('No') },
         onConfirm: () => update(),
       });
@@ -33,6 +36,8 @@ export const checkForUpdate = async () => {
 }
 
 export const update = async () => {
+  if (!isTauriRuntime()) return;
+
   try {
     info('Installing update');
     const manifest = await check();

@@ -1,6 +1,6 @@
 .row {
     padding: 18px 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 2px dashed rgba(32, 38, 47, 0.14);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -16,13 +16,14 @@
 }
 
 .title {
-    color: #f1f3f8;
-    font-size: 1.12rem;
-    font-weight: 540;
+    color: var(--roam-ink);
+    font-family: var(--roam-font-note);
+    font-size: 19px;
+    font-weight: 400;
 }
 
 .description {
-    color: #9ea4b3;
+    color: var(--roam-muted);
     margin-top: 4px;
     font-size: 0.92rem;
     line-height: 1.5;
@@ -30,16 +31,4 @@
 
 .extra {
     margin-top: 14px;
-}
-
-:global([data-mantine-color-scheme="light"]) .row {
-    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-}
-
-:global([data-mantine-color-scheme="light"]) .title {
-    color: #1c2230;
-}
-
-:global([data-mantine-color-scheme="light"]) .description {
-    color: #4a5568;
 }

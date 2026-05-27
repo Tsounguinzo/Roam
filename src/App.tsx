@@ -7,9 +7,7 @@ import { useDefaultPets, usePets } from "./hooks/usePets";
 import { confirm } from "@tauri-apps/plugin-dialog";
 import { MantineProvider } from "@mantine/core";
 import { PrimaryColor } from "./utils";
-import { ColorSchemeType } from "./types/ISetting";
-import { useSettingStore } from "./hooks/useSettingStore";
-const appWindow = getCurrentWebviewWindow()
+import { isTauriRuntime } from "./utils/runtime";
 
 const PhaserWrapper = React.lazy(() => import("./PhaserWrapper"));
 const SettingsWindow = React.lazy(() => import("./SettingsWindow"));
@@ -18,15 +16,14 @@ function App() {
   useSettings();
   useDefaultPets();
   const { isError, error } = usePets();
-  const { theme } = useSettingStore();
 
-  if (isError) {
+  if (isError && isTauriRuntime()) {
     confirm(`Error: ${error.message}`, {
       title: 'Roam',
       kind: 'error',
     }).then((ok) => {
       if (ok !== undefined) {
-        appWindow.close();
+        getCurrentWebviewWindow().close();
       }
     });
   }
@@ -42,36 +39,22 @@ function App() {
         <Route path="/setting" element={
           <Suspense fallback={<Loading />}>
             <MantineProvider
-              defaultColorScheme={ColorSchemeType.Dark}
-              forceColorScheme={theme}
+              defaultColorScheme="light"
+              forceColorScheme="light"
               theme={{
-                fontFamily: '"SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Siemreap", sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+                fontFamily: '"Nunito", ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Siemreap", sans-serif',
                 colors: {
-                  dark: [
-                    "#C1C2C5",
-                    "#A6A7AB",
-                    "#909296",
-                    "#5C5F66",
-                    "#373A40",
-                    "#2C2E33",
-                    // shade
-                    "#1A1B1E",
-                    // background
-                    "#141517",
-                    "#1A1B1E",
-                    "#101113",
-                  ],
                   brand: [
-                    "#FFF2EC",
-                    "#FEE7DB",
-                    "#FDD8C7",
-                    "#FCC9B2",
-                    "#F9B59B",
-                    "#F2AB83",
-                    "#E6956B",
-                    "#D87E53",
-                    "#C9693E",
-                    "#B7552B",
+                    "#fff5ef",
+                    "#ffe6d8",
+                    "#ffd4bd",
+                    "#f9bf9a",
+                    "#f2aa82",
+                    "#e89467",
+                    "#c77b55",
+                    "#a9674e",
+                    "#6f3f32",
+                    "#151b2d",
                   ],
                 },
                 primaryColor: PrimaryColor,

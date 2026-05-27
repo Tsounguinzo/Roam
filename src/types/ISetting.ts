@@ -6,19 +6,11 @@ export interface IGetAppSetting {
     key?: string,
 }
 
-export enum ColorSchemeType {
-    Light = "light",
-    Dark = "dark",
-}
-
-export type ColorScheme = ColorSchemeType.Light | ColorSchemeType.Dark;
-
 export enum SettingsTabId {
     MyPets = 0,
     PetStore = 1,
     AddCustomPet = 2,
     Preferences = 3,
-    About = 4,
 }
 
 export interface SettingsTabDefinition {

@@ -7,7 +7,6 @@
     "Home": "Home",
     "Home Preferences": "Home preferences",
     "Settings": "ការកំណត់",
-    "About": "អំពីកម្មវិធី",
     "Setting Preferences": "ការកំណត់",
     "Apply": "អនុវត្ត",
     "Cancel": "បោះបង់",
@@ -82,6 +81,8 @@
     "Allow pet climb": "អនុញ្ញាតឱ្យសត្វចិញ្ចឹមតោង",
     "If allow pet climb turn on, pet will be able to climb on the left, right, and top of the window": "ប្រសិនបើអនុញ្ញាតឱ្យសត្វតោងកុំព្យូទ័រ សត្វចិញ្ចឹមនឹងអាចឡើងតោងនៅខាងឆ្វេង ស្ដាំ និងកំពូលកុំព្យូទ័រ",
     "Search for pets": "ស្វែងរកសត្វចិញ្ចឹម",
-    "Dark mode": "Dark mode",
-    "Use dark mode for the app appearance": "Use dark mode for the app appearance"
+    "No pets found": "រកមិនឃើញសត្វចិញ្ចឹម",
+    "No pets match search": "គ្មានសត្វចិញ្ចឹមណាត្រូវនឹង \"{{query}}\" ទេ។ សូមសាកល្បងឈ្មោះផ្សេង។",
+    "Collapse navigation": "បង្រួមការរុករក",
+    "Expand navigation": "ពង្រីកការរុករក"
 }

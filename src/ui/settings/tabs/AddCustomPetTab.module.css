@@ -1,11 +1,11 @@
 .browse {
-    color: var(--mantine-color-gray-7) !important;
+    color: var(--roam-ink) !important;
 
     @mixin dark {
-        color: var(--mantine-color-dark-0) !important;
+        color: var(--roam-ink) !important;
     }
 }
 
 .errorBorder {
-    border: calc(.0625rem*var(--mantine-scale)) solid var(--mantine-color-error) !important;
+    border: 2px solid var(--roam-brown) !important;
 }

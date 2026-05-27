@@ -11,14 +11,15 @@ import { handleSettingChange } from "../../../utils/handleSettingChange";
 import { PetCardType } from "../../../types/components/type";
 import { useSettingStore } from "../../../hooks/useSettingStore";
 import { DispatchType } from "../../../types/IEvents";
-import { ColorSchemeType, DefaultConfigName } from "../../../types/ISetting";
+import { DefaultConfigName } from "../../../types/ISetting";
 import { invoke } from "@tauri-apps/api/core";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { useDefaultPets } from "../../../hooks/usePets";
+import PetSearchEmptyState from "./PetSearchEmptyState";
 
 function PetStoreTab() {
     const { refetch } = useDefaultPets();
-    const { setPets, defaultPet, theme: colorScheme } = useSettingStore();
+    const { setPets, defaultPet } = useSettingStore();
     const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -38,14 +39,11 @@ function PetStoreTab() {
             icon: <IconCheck size="1rem" />,
             withBorder: true,
             autoClose: 800,
-            style: (theme) => ({
-                backgroundColor: colorScheme === ColorSchemeType.Dark ? theme.colors.dark[7] : theme.colors.gray[0],
-            })
         })
 
         // update pet window to show new pet
         handleSettingChange(DispatchType.AddPet, pet);
-    }, [colorScheme, setPets, t]);
+    }, [setPets, t]);
 
     const removeCustomPet = useCallback(async (pet: ISpriteConfig) => {
         const petLinker = await getAppSettings({ configName: DefaultConfigName.PET_LINKER });
@@ -63,15 +61,12 @@ function PetStoreTab() {
             icon: <IconCheck size="1rem" />,
             withBorder: true,
             autoClose: 800,
-            style: (theme) => ({
-                backgroundColor: colorScheme === ColorSchemeType.Dark ? theme.colors.dark[7] : theme.colors.gray[0],
-            })
         });
 
         const petCardDom = document.getElementById(`petCard-id-${pet.customId}`);
         if (petCardDom) petCardDom.remove();
         refetch();
-    }, [colorScheme, refetch, t]);
+    }, [refetch, t]);
 
     const filteredPets = useMemo(() => {
         return defaultPet.filter(pet =>
@@ -84,6 +79,7 @@ function PetStoreTab() {
             return <PetCard key={index} pet={pet} btnLabel={t("Acquire")} type={PetCardType.Add} btnFunction={() => addPetToConfig(pet)} btnLabelCustom={t("Remove")} btnFunctionCustom={() => removeCustomPet(pet)} />
         });
     }, [t, filteredPets, addPetToConfig, removeCustomPet]);
+    const hasSearchQuery = searchQuery.trim().length > 0;
 
     return (
         <>
@@ -100,7 +96,7 @@ function PetStoreTab() {
                 gridGap: "1rem",
                 paddingBottom: "1rem",
             }}>
-                {PetCards}
+                {PetCards.length > 0 ? PetCards : hasSearchQuery && <PetSearchEmptyState query={searchQuery} />}
             </Box>
         </>
     )

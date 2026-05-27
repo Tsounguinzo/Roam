@@ -5,12 +5,14 @@ export interface SettingsSidebarNavItemProps {
     Icon: React.ReactNode;
     label: string;
     active: boolean;
+    compact: boolean;
     onSelect: () => void;
 }
 
 export interface SettingsSidebarNavProps {
     activeTab: number;
     tabs: SettingsTabDefinition[];
+    compact: boolean;
 }
 
 export interface PageHeaderProps {

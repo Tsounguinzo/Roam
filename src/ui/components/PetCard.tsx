@@ -31,7 +31,7 @@ function PetCard({ btnLabel, btnLabelCustom, pet, btnFunction, btnFunctionCustom
                 {inView ?
                     <Box>
                         <PhaserCanvas pet={pet} playState={playState} key={pet.id} />
-                        <Box p={"lg"}>
+                        <Box p={"md"}>
                             <Title order={4} className={classes.title}>{pet.name}</Title>
                             {/* for now use native select because select in mantine 7 is very slow, let see until further update */}
                             {/* <Select
@@ -47,7 +47,7 @@ function PetCard({ btnLabel, btnLabelCustom, pet, btnFunction, btnFunctionCustom
                                 data={availableStates}
                             /> */}
                             <NativeSelect
-                                my={"md"}
+                                my={"xs"}
                                 defaultValue={playState}
                                 onChange={(event) => setPlayState(event.currentTarget.value)}
                                 key={pet.id ?? pet.name}
@@ -58,7 +58,7 @@ function PetCard({ btnLabel, btnLabelCustom, pet, btnFunction, btnFunctionCustom
                                     variant={ButtonVariant}
                                     fullWidth
                                     onClick={btnFunction}
-                                    color={type === PetCardType.Remove ? "red" : PrimaryColor}
+                                    color={PrimaryColor}
                                     leftSection={type === PetCardType.Add ?
                                         <IconPlus /> :
                                         <IconTrash />
@@ -72,7 +72,7 @@ function PetCard({ btnLabel, btnLabelCustom, pet, btnFunction, btnFunctionCustom
                                         variant={ButtonVariant}
                                         fullWidth
                                         onClick={btnFunctionCustom}
-                                        color={"red"}
+                                        color={PrimaryColor}
                                         leftSection={<IconTrash />}
                                     >
                                         {btnLabelCustom}

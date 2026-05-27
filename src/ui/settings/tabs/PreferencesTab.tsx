@@ -1,4 +1,4 @@
-import { Box, Select, Slider, Switch, Text } from "@mantine/core";
+import { Box, Select, Slider, Text } from "@mantine/core";
 import languages from "../../../locale/languages";
 import SettingToggleRow from "./preferences/SettingToggleRow";
 import { useTranslation } from "react-i18next";
@@ -9,9 +9,7 @@ import { IconLanguage } from "@tabler/icons-react";
 import { invoke } from "@tauri-apps/api/core";
 import SettingActionRow from "./preferences/SettingActionRow";
 import { DispatchType } from "../../../types/IEvents";
-import { ColorSchemeType } from "../../../types/ISetting";
 import classes from "./PreferencesTab.module.css";
-import rowClasses from "./preferences/SettingRow.module.css";
 
 interface PreferencesToggleItem {
     title: string,
@@ -23,7 +21,7 @@ interface PreferencesToggleItem {
 
 function PreferencesTab() {
     const { t, i18n } = useTranslation();
-    const { allowAutoStartUp, allowPetAboveTaskbar, allowPetInteraction, allowOverridePetScale, petScale, allowPetClimbing, theme } = useSettingStore();
+    const { allowAutoStartUp, allowPetAboveTaskbar, allowPetInteraction, allowOverridePetScale, petScale, allowPetClimbing } = useSettingStore();
 
     const generalSwitches: PreferencesToggleItem[] = [
         {
@@ -71,29 +69,13 @@ function PreferencesTab() {
 
     return (
         <Box className={classes.page}>
-                <Text className={classes.sectionTitle}>General</Text>
-                <Box className={classes.panel}>
+            <Text className={classes.sectionTitle}>General</Text>
+            <Box className={classes.panel}>
                 {generalToggleRows}
             </Box>
 
             <Text className={classes.sectionTitle}>Appearance</Text>
             <Box className={classes.panel}>
-                <Box className={rowClasses.row}>
-                    <Box className={rowClasses.body}>
-                        <Text className={rowClasses.title}>{t("Dark mode")}</Text>
-                        <Text className={rowClasses.description}>{t("Use dark mode for the app appearance")}</Text>
-                    </Box>
-                    <Switch
-                        size={"lg"}
-                        checked={theme === ColorSchemeType.Dark}
-                        onChange={(event) =>
-                            handleSettingChange(
-                                DispatchType.ChangeAppTheme,
-                                event.target.checked ? ColorSchemeType.Dark : ColorSchemeType.Light
-                            )
-                        }
-                    />
-                </Box>
                 <SettingActionRow
                     title={t("App Config Path")}
                     description={t(`The location path of where the app store your config such as settings, pets, etc`)}

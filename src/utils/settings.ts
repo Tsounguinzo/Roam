@@ -7,8 +7,11 @@ import { IPetObject } from "../types/ISpriteConfig";
 import { showNotification } from "./notification";
 import i18next from "i18next";
 import { error, info } from "@tauri-apps/plugin-log";
+import { isTauriRuntime } from "./runtime";
 
 export function toggleAutoStartUp(allowAutoStartUp: boolean) {
+    if (!isTauriRuntime()) return;
+
     (async () => {
         const hasEnabledStartUp = await invoke<boolean>("plugin:autostart|is_enabled");
 
@@ -22,6 +25,8 @@ export function toggleAutoStartUp(allowAutoStartUp: boolean) {
 
 // default will return app settings, if key is provided, will return specific key
 export async function getAppSettings({ configName = "settings.json", key = "app", withErrorDialog = true }: IGetAppSetting) {
+    if (!isTauriRuntime()) return;
+
     const configPath: string = await invoke("combine_config_path", { config_name: configName });
     const configExists = await exists(configPath);
 
@@ -43,6 +48,8 @@ interface ISetSetting extends IGetAppSetting {
     newValue: unknown,
 }
 export function setSettings({ configName = "settings.json", key = "app", setKey, newValue }: ISetSetting) {
+    if (!isTauriRuntime()) return;
+
     (async () => {
         let setting: any = await getAppSettings({ configName });
         setting[setKey] = newValue;
@@ -59,6 +66,8 @@ export interface ISetConfig extends IGetAppSetting {
     newConfig: unknown,
 }
 export function setConfig({ configName = "settings.json", key = "app", newConfig }: ISetConfig) {
+    if (!isTauriRuntime()) return;
+
     (async () => {
         const configPath: string = await invoke("combine_config_path", { config_name: configName });
         // if not exist, create new file, so we don't need to check if file exists
@@ -69,6 +78,8 @@ export function setConfig({ configName = "settings.json", key = "app", newConfig
 }
 
 export async function getNoneExistingConfigFileName({ configName, extension, folderName }: { configName: string, extension: string, folderName?: string }) {
+    if (!isTauriRuntime()) return configName;
+
     // if file name doesn't exist, return the same name
     // else generate a new name with -1, -2, -3, etc
     const configPath: string = await invoke("combine_config_path", { config_name: `${folderName}${configName}${extension}` });
@@ -87,6 +98,8 @@ export async function getNoneExistingConfigFileName({ configName, extension, fol
 }
 
 async function updateCustomPetConfig(newCustomPetPath: string) {
+    if (!isTauriRuntime()) return;
+
     const customPetConfigPath: string = await invoke("combine_config_path", { config_name: DefaultConfigName.PET_LINKER });
     if (await exists(customPetConfigPath)) {
 
@@ -103,6 +116,8 @@ async function updateCustomPetConfig(newCustomPetPath: string) {
 }
 
 export async function saveCustomPet(petObject: IPetObject) {
+    if (!isTauriRuntime()) return;
+
     try {
         info(`Start saving custom pet, pet name: ${petObject.name}`);
         petObject.customId = crypto.randomUUID();

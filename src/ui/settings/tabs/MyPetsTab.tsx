@@ -12,14 +12,14 @@ import { IconCheck } from "@tabler/icons-react";
 import { handleSettingChange } from "../../../utils/handleSettingChange";
 import { PetCardType } from "../../../types/components/type";
 import { DispatchType } from "../../../types/IEvents";
-import { ColorSchemeType } from "../../../types/ISetting";
 import { usePets } from "../../../hooks/usePets";
 import { invoke } from "@tauri-apps/api/core";
+import PetSearchEmptyState from "./PetSearchEmptyState";
 
 export function MyPetsTab() {
     const { refetch } = usePets();
     const { t } = useTranslation();
-    const { theme: colorScheme, pets, setPets } = useSettingStore();
+    const { pets, setPets } = useSettingStore();
     const [searchQuery, setSearchQuery] = useState("");
     const [isFirstRemoval, setIsFirstRemoval] = useState(true);
 
@@ -51,13 +51,10 @@ export function MyPetsTab() {
             icon: <IconCheck size="1rem" />,
             withBorder: true,
             autoClose: 800,
-            style: (theme) => ({
-                backgroundColor: colorScheme === ColorSchemeType.Dark ? theme.colors.dark[7] : theme.colors.gray[0],
-            })
         });
 
         await refetch();
-    }, [colorScheme, isFirstRemoval, refetch, setPets, t]);
+    }, [isFirstRemoval, refetch, setPets, t]);
 
     const filteredPets = useMemo(() => {
         return pets.filter(pet =>
@@ -72,6 +69,7 @@ export function MyPetsTab() {
             );
         });
     }, [t, filteredPets, removePet]);
+    const hasSearchQuery = searchQuery.trim().length > 0;
 
     return (
         <>
@@ -87,8 +85,8 @@ export function MyPetsTab() {
                 gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
                 gridGap: "1rem",
             }}>
-                {PetCards}
-                <AddPetCard />
+                {PetCards.length > 0 ? PetCards : hasSearchQuery && <PetSearchEmptyState query={searchQuery} />}
+                {!hasSearchQuery && <AddPetCard />}
             </Box>
         </>
     );

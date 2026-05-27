@@ -16,7 +16,7 @@ export const showNotification = ({
     notifications.show({
         message: message,
         title: title,
-        color: isError ? "red" : PrimaryColor,
+        color: PrimaryColor,
         withBorder: true,
         autoClose: 3000,
         icon: isError ? <IconExclamationCircle size="1rem" /> : <IconCheck size="1rem" />,

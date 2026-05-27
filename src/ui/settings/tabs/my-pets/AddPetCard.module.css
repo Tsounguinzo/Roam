@@ -1,13 +1,22 @@
 .plus {
-    color: var(--mantine-primary-color-light);
+    color: var(--roam-blue);
 
     &:hover {
-        color: var(--mantine-primary-color-light-hover);
+        color: var(--roam-brown);
     }
 }
 
 .box {
+    background: var(--roam-postit) !important;
+    border: 2.5px dashed var(--roam-ink) !important;
+    border-radius: var(--roam-wobble-b) !important;
+    box-shadow: var(--roam-shadow) !important;
+    transform: rotate(0.6deg);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+
     &:hover {
         cursor: pointer;
+        transform: translateY(-2px) rotate(-1deg);
+        box-shadow: 5px 7px 0 rgba(32, 38, 47, 0.18) !important;
     }
 }

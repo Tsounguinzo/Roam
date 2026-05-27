@@ -7,7 +7,6 @@
   "Home": "Home",
   "Home Preferences": "Home preferences",
   "Settings": "設定",
-  "About": "關於",
   "Setting Preferences": "設定偏好",
   "Apply": "應用",
   "Cancel": "取消",
@@ -84,6 +83,8 @@
   "If allow pet climb turn on, pet will be able to climb on the left, right, and top of the window": "如果允許寵物攀爬，寵物將能在窗口的左邊、右邊和頂部攀爬",
   "Search for pets": "搜索寵物",
   "Search for my pets": "搜索我的寵物",
-  "Dark mode": "Dark mode",
-  "Use dark mode for the app appearance": "Use dark mode for the app appearance"
+  "No pets found": "沒有找到寵物",
+  "No pets match search": "沒有寵物符合「{{query}}」。請嘗試其他名稱。",
+  "Collapse navigation": "摺疊導覽",
+  "Expand navigation": "展開導覽"
 }

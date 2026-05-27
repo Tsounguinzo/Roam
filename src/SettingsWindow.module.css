@@ -1,44 +1,155 @@
 .viewport {
     height: 100vh;
-    background: var(--mantine-color-dark-7, #141517);
+    color: var(--roam-ink);
+    background-color: var(--roam-paper);
+    background-image:
+        linear-gradient(var(--roam-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--roam-grid) 1px, transparent 1px);
+    background-size: 24px 24px;
 }
 
 .window {
     height: 100vh;
     display: grid;
-    grid-template-columns: 336px 1fr;
+    grid-template-columns: 236px 1fr;
+}
+
+.compact {
+    grid-template-columns: 78px 1fr;
 }
 
 .sidebar {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 18px 16px;
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    gap: 8px;
+    padding: 18px 14px;
+    background: var(--roam-paper-2);
+    border-right: 3px solid var(--roam-ink);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 4px 16px;
+}
+
+.compact .brand {
+    justify-content: center;
+    padding-inline: 0;
+}
+
+.brandLogo {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+    background: var(--roam-card);
+    border: 2.5px solid var(--roam-ink);
+    border-radius: 12px 8px 13px 9px / 8px 13px 9px 12px;
+    box-shadow: 2px 3px 0 rgba(32, 38, 47, 0.16);
+}
+
+.brandText {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+}
+
+.brandText span {
+    font-family: var(--roam-font-hand);
+    font-size: 31px;
+    font-weight: 700;
+    transform: rotate(-2deg);
+}
+
+.compact .brandText {
+    display: none;
+}
+
+.navToggle {
+    width: 100%;
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--roam-ink);
+    background: var(--roam-card);
+    border: 2px solid var(--roam-ink);
+    border-radius: var(--roam-wobble-b);
+    box-shadow: 2px 3px 0 rgba(21, 27, 45, 0.14);
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.navToggle:hover {
+    background: var(--roam-peach-soft);
+    transform: translateY(-1px) rotate(-0.6deg);
+}
+
+.presentedBy {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 4px;
+    margin-top: auto;
+    padding: 14px 6px 2px;
+    color: var(--roam-muted);
+    font-family: var(--roam-font-note);
+    font-size: 14px;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 0.12s ease, transform 0.12s ease;
+}
+
+.presentedBy b {
+    color: var(--roam-ink);
+    font-family: var(--roam-font-hand);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.presentedBy:hover {
+    color: var(--roam-brown);
+    transform: rotate(-1.2deg);
+}
+
+.compact .presentedBy {
+    display: none;
 }
 
 .main {
     min-height: 0;
-    background:
-        linear-gradient(180deg, rgba(10, 13, 20, 0.98), rgba(8, 10, 15, 0.99));
+    position: relative;
+    background: transparent;
+}
+
+.main::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 262px;
+    width: 2px;
+    background: rgba(168, 102, 78, 0.42);
+    pointer-events: none;
+}
+
+.compact .main::before {
+    left: 104px;
 }
 
 .mainScroll {
     height: 100%;
     overflow-y: auto;
     width: 100%;
-    padding: 56px 46px;
+    padding: 34px 40px 42px 48px;
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 24px;
 }
 
-@media (max-width: 980px) {
-    .window {
-        grid-template-columns: 72px 1fr;
-        min-height: 100vh;
-    }
-
+@media (max-width: 720px) {
     .sidebar {
         padding: 16px 10px;
         border-bottom: none;
@@ -47,18 +158,4 @@
     .mainScroll {
         padding: 28px 18px;
     }
-}
-
-:global([data-mantine-color-scheme="light"]) .viewport {
-    background: #f4f6fc;
-}
-
-:global([data-mantine-color-scheme="light"]) .sidebar {
-    background: transparent;
-    border-right: 1px solid rgba(15, 23, 42, 0.08);
-}
-
-:global([data-mantine-color-scheme="light"]) .main {
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(244, 246, 252, 0.98));
 }

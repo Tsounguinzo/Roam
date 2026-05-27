@@ -6,21 +6,29 @@ import i18next from "i18next";
 import defaultSettings from "../../src-tauri/src/app/default/settings.json";
 import { error } from "@tauri-apps/plugin-log";
 import { ISettingStoreVariables } from "../types/hooks/type";
+import { isTauriRuntime } from "../utils/runtime";
 
-const { setLanguage, setTheme, setAllowAutoStartUp, setAllowPetAboveTaskbar, setAllowPetInteraction, setAllowOverridePetScale, setPetScale, setAllowPetClimbing } = useSettingStore.getState();
+const { setLanguage, setAllowAutoStartUp, setAllowPetAboveTaskbar, setAllowPetInteraction, setAllowOverridePetScale, setPetScale, setAllowPetClimbing } = useSettingStore.getState();
 
 const getSettings = async () => {
     let setting: ISettingStoreVariables = await getAppSettings({ configName: "settings.json" });
     
     if (setting === undefined) {
+        if (!isTauriRuntime()) {
+            setting = {
+                ...defaultSettings,
+                pets: [],
+                defaultPet: [],
+            };
+        } else {
         error("Settings is undefined")
         throw new Error("Settings is undefined");
+        }
     }
 
     if (i18next.language !== setting.language) i18next.changeLanguage(setting.language);
     setLanguage(setting.language ?? defaultSettings.language);
-    setTheme(setting.theme ?? defaultSettings.theme);
-    setAllowAutoStartUp(await isEnabled());
+    setAllowAutoStartUp(isTauriRuntime() ? await isEnabled() : defaultSettings.allowAutoStartUp);
     setAllowPetAboveTaskbar(setting.allowPetAboveTaskbar ?? defaultSettings.allowPetAboveTaskbar);
     setAllowPetInteraction(setting.allowPetInteraction ?? defaultSettings.allowPetInteraction);
     setAllowPetClimbing(setting.allowPetClimbing ?? defaultSettings.allowPetClimbing);
