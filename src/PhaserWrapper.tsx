@@ -3,6 +3,7 @@ import Phaser from "phaser";
 import Pets from "./scenes/Pets";
 import { useSettingStore } from "./hooks/useSettingStore";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import ReminderFlightOverlay from "./ui/reminders/ReminderFlightOverlay";
 const appWindow = getCurrentWebviewWindow()
 
 function PhaserWrapper() {
@@ -69,7 +70,12 @@ function PhaserWrapper() {
 
     }, [pets]);
 
-    return <div ref={phaserDom} />;
+    return (
+        <>
+            <div ref={phaserDom} />
+            <ReminderFlightOverlay />
+        </>
+    );
 }
 
 export default PhaserWrapper;

@@ -6,6 +6,7 @@ import {
   IconSettings,
   IconBuildingStore,
   IconPaw,
+  IconBellRinging,
 } from '@tabler/icons-react';
 import SettingsSidebarNav from './ui/settings/navigation/SettingsSidebarNav';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +17,7 @@ import clsx from 'clsx';
 import MyPetsTab from './ui/settings/tabs/MyPetsTab';
 import PetStoreTab from './ui/settings/tabs/PetStoreTab';
 import PreferencesTab from './ui/settings/tabs/PreferencesTab';
+import RemindersTab from './ui/settings/tabs/RemindersTab';
 import { useSettingTabStore } from './hooks/useSettingTabStore';
 import PageHeader from './ui/settings/layout/PageHeader';
 import { Notifications } from '@mantine/notifications';
@@ -81,7 +83,15 @@ function SettingsWindow() {
       label: t('Settings'),
       tab: SettingsTabId.Preferences,
     },
-  ]), [defaultPet.length, language, pets.length, t]);
+    {
+      Component: RemindersTab,
+      title: t("Reminders"),
+      description: t("Set up reminders, fly-by messages, calendar links, and flight customisation"),
+      Icon: <IconBellRinging size="1rem" />,
+      label: t('Reminders'),
+      tab: SettingsTabId.Reminders,
+    },
+  ]).sort((a, b) => a.tab - b.tab), [defaultPet.length, language, pets.length, t]);
   const normalizedTab = settingsTabs[activeTab] ? activeTab : SettingsTabId.MyPets;
   const CurrentSettingTab = settingsTabs[normalizedTab].Component;
   const handlePresentedByClick = (event: MouseEvent<HTMLAnchorElement>) => {

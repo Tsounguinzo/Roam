@@ -1,5 +1,5 @@
-Self-hosted fonts bundled with the Quakpit landing page
-========================================================
+Self-hosted fonts bundled with Roam
+===================================
 
 Both fonts are licensed under the SIL Open Font License, Version 1.1
 (https://scripts.sil.org/OFL). They are bundled (self-hosted) instead of

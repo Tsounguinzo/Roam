@@ -15,6 +15,7 @@ export type TRenderEventListener = {
 
 export enum EventType {
     SettingWindowToPetOverlay = 'settingWindowToPetOverlay',
+    ReminderFlight = 'reminderFlight',
 }
 
 export enum DispatchType {

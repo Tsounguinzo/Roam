@@ -10,7 +10,8 @@ export enum SettingsTabId {
     MyPets = 0,
     PetStore = 1,
     AddCustomPet = 2,
-    Preferences = 3,
+    Reminders = 3,
+    Preferences = 4,
 }
 
 export interface SettingsTabDefinition {
