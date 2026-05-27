@@ -158,8 +158,8 @@
         overflow: hidden;
         border-radius: 0;
         background:
-            url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='360'%20height='180'%3E%3Cg%20fill='%23ffffff'%3E%3Cg%20opacity='0.92'%3E%3Ccircle%20cx='66'%20cy='52'%20r='17'/%3E%3Ccircle%20cx='88'%20cy='44'%20r='22'/%3E%3Ccircle%20cx='112'%20cy='52'%20r='16'/%3E%3Crect%20x='62'%20y='52'%20width='56'%20height='15'%20rx='7'/%3E%3C/g%3E%3Cg%20opacity='0.7'%3E%3Ccircle%20cx='250'%20cy='120'%20r='14'/%3E%3Ccircle%20cx='270'%20cy='112'%20r='19'/%3E%3Ccircle%20cx='291'%20cy='120'%20r='13'/%3E%3Crect%20x='248'%20y='120'%20width='46'%20height='13'%20rx='6'/%3E%3C/g%3E%3Cg%20opacity='0.55'%3E%3Ccircle%20cx='180'%20cy='30'%20r='11'/%3E%3Ccircle%20cx='196'%20cy='25'%20r='14'/%3E%3Ccircle%20cx='212'%20cy='31'%20r='10'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat-x,
-            linear-gradient(180deg, #bfe7ff 0%, #8fcbf3 100%);
+                url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='360'%20height='180'%3E%3Cg%20fill='%23ffffff'%3E%3Cg%20opacity='0.92'%3E%3Ccircle%20cx='66'%20cy='52'%20r='17'/%3E%3Ccircle%20cx='88'%20cy='44'%20r='22'/%3E%3Ccircle%20cx='112'%20cy='52'%20r='16'/%3E%3Crect%20x='62'%20y='52'%20width='56'%20height='15'%20rx='7'/%3E%3C/g%3E%3Cg%20opacity='0.7'%3E%3Ccircle%20cx='250'%20cy='120'%20r='14'/%3E%3Ccircle%20cx='270'%20cy='112'%20r='19'/%3E%3Ccircle%20cx='291'%20cy='120'%20r='13'/%3E%3Crect%20x='248'%20y='120'%20width='46'%20height='13'%20rx='6'/%3E%3C/g%3E%3Cg%20opacity='0.55'%3E%3Ccircle%20cx='180'%20cy='30'%20r='11'/%3E%3Ccircle%20cx='196'%20cy='25'%20r='14'/%3E%3Ccircle%20cx='212'%20cy='31'%20r='10'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat-x,
+                linear-gradient(180deg, #bfe7ff 0%, #8fcbf3 100%);
         background-size: 360px 100%, auto;
         animation: reminder-clouds-drift 22s linear infinite;
     }
@@ -186,8 +186,9 @@
         border: 2px solid rgba(0, 0, 0, 0.18);
         border-radius: 6px;
         background: repeating-linear-gradient(-8deg, var(--reminder-stripe-a, #fffdf6) 0 22px, var(--reminder-stripe-b, #ffd34d) 22px 44px);
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
         color: var(--reminder-banner-text, #151b2d);
-        filter: url(#banner-wave) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.22));
+        filter: url(#banner-wave);
         transform: skewX(-7deg);
         will-change: translate, filter;
         animation: reminder-flight-bob 1.7s ease-in-out infinite;
@@ -577,8 +578,9 @@
         border: 2px solid rgba(0, 0, 0, 0.18);
         border-radius: 10px;
         background: repeating-linear-gradient(-8deg, var(--reminder-stripe-a, #fffdf6) 0 38px, var(--reminder-stripe-b, #ffd34d) 38px 76px);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
         color: var(--reminder-banner-text, #151b2d);
-        filter: url(#banner-wave) drop-shadow(0 10px 18px rgba(0, 0, 0, 0.24));
+        filter: url(#banner-wave);
         transform: skewX(-7deg);
         will-change: translate, filter;
     }
