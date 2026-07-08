@@ -78,7 +78,9 @@ fn build_app() {
         .invoke_handler(tauri::generate_handler![
             conf::convert_path,
             conf::combine_config_path,
+            cmd::connect_google_calendar_desktop,
             cmd::get_mouse_position,
+            cmd::is_google_calendar_desktop_oauth_configured,
             cmd::open_folder,
             utils::reopen_main_window,
         ])

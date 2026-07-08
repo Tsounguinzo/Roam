@@ -21,6 +21,10 @@ log = "^0.4.30"
 open = "5.3.5"
 tokio = "1.52.3"
 dirs = "6"
+base64 = "0.22.1"
+rand = "0.8.5"
+reqwest = { version = "0.13.1", features = ["json"] }
+sha2 = "0.10.8"
 tauri-plugin-store = "2"
 tauri-plugin-single-instance = { version = "2" }
 tauri-plugin-log = { version = "2" }

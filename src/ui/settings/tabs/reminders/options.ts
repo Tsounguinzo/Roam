@@ -27,6 +27,7 @@ export interface ReminderPrefs {
   font: string;
   bannerSize: ReminderBannerSize;
   soundPack: string;
+  googleCalendarConnected: boolean;
   calendarLinks: string[];
   reminders: FlightReminder[];
 }
@@ -48,6 +49,7 @@ export const DEFAULT_REMINDER_PREFS: ReminderPrefs = {
   font: 'system',
   bannerSize: 'medium',
   soundPack: 'quack',
+  googleCalendarConnected: false,
   calendarLinks: [],
   reminders: [],
 };
@@ -69,6 +71,7 @@ export const readReminderPrefs = (): ReminderPrefs => {
 
 export const writeReminderPrefs = (prefs: ReminderPrefs) => {
   localStorage.setItem(REMINDERS_STORAGE_KEY, JSON.stringify(prefs));
+  window.dispatchEvent(new CustomEvent(REMINDERS_STORAGE_KEY, { detail: prefs }));
 };
 
 export const updateReminderPrefs = (patch: Partial<ReminderPrefs>) => {

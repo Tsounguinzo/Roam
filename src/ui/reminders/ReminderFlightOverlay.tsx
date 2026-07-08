@@ -2,7 +2,13 @@ import { listen } from '@tauri-apps/api/event';
 import { memo, useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { EventType } from '../../types/IEvents';
 import { isTauriRuntime } from '../../utils/runtime';
-import { DEFAULT_REMINDER_PREFS, getReminderBannerSizeStyle, REMINDERS_STORAGE_KEY, type ReminderBannerSize, type ReminderPrefs } from '../settings/tabs/reminders/options';
+import {
+  GOOGLE_CALENDAR_TOKEN_STORAGE_KEY,
+  fetchCalendarReminders,
+  fetchGoogleCalendarReminders,
+  readGoogleCalendarToken,
+} from '../settings/tabs/reminders/calendar';
+import { DEFAULT_REMINDER_PREFS, getReminderBannerSizeStyle, readReminderPrefs, REMINDERS_STORAGE_KEY, type FlightReminder, type ReminderBannerSize, type ReminderPrefs } from '../settings/tabs/reminders/options';
 import {
   REMINDER_BLADE_URL,
   REMINDER_FLIGHT_REQUEST_KEY,
@@ -13,12 +19,18 @@ import {
 } from './flight';
 import ReminderBanner from './ReminderBanner';
 
+interface ActiveReminderFlight {
+  request: ReminderFlightRequest;
+  lane: number;
+  startDelayMs: number;
+}
+
+const FLIGHT_LANES = [12, 28, 44, 60, 76];
+const FLIGHT_STAGGER_MS = 260;
+
 const readPrefs = (): ReminderPrefs => {
   try {
-    return {
-      ...DEFAULT_REMINDER_PREFS,
-      ...JSON.parse(localStorage.getItem(REMINDERS_STORAGE_KEY) ?? 'null'),
-    };
+    return readReminderPrefs();
   } catch {
     return DEFAULT_REMINDER_PREFS;
   }
@@ -114,10 +126,13 @@ function BannerWaveFilter() {
 }
 
 function ReminderFlightOverlay() {
-  const [flight, setFlight] = useState<ReminderFlightRequest | null>(null);
+  const [flights, setFlights] = useState<ActiveReminderFlight[]>([]);
   const [prefs, setPrefs] = useState(readPrefs);
-  const clearTimerRef = useRef<number | undefined>(undefined);
+  const [calendarReminders, setCalendarReminders] = useState<FlightReminder[]>([]);
+  const clearTimerRefs = useRef<Map<string, number>>(new Map());
+  const nextLaneRef = useRef(0);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const firedReminderKeysRef = useRef<Set<string>>(new Set());
 
   const playSound = useCallback((request: ReminderFlightRequest) => {
     const { sound } = resolveReminderFlightAssets(request);
@@ -152,27 +167,44 @@ function ReminderFlightOverlay() {
 
   const startFlight = useCallback((value: Partial<ReminderFlightRequest>) => {
     const request = normalizeReminderFlightRequest(value);
-    window.clearTimeout(clearTimerRef.current);
-    setFlight(null);
-    window.requestAnimationFrame(() => {
-      setFlight(request);
-      playSound(request);
-      clearTimerRef.current = window.setTimeout(() => setFlight(null), request.durationMs + 300);
-    });
+    const lane = nextLaneRef.current % FLIGHT_LANES.length;
+    const startDelayMs = Math.floor(nextLaneRef.current / FLIGHT_LANES.length) * FLIGHT_STAGGER_MS;
+    nextLaneRef.current += 1;
+
+    setFlights((current) => [...current, { request, lane, startDelayMs }]);
+    window.setTimeout(() => playSound(request), startDelayMs);
+
+    const clearTimer = window.setTimeout(() => {
+      setFlights((current) => current.filter((flight) => flight.request.id !== request.id));
+      clearTimerRefs.current.delete(request.id);
+      if (clearTimerRefs.current.size === 0) nextLaneRef.current = 0;
+    }, request.durationMs + startDelayMs + 300);
+
+    clearTimerRefs.current.set(request.id, clearTimer);
   }, [playSound]);
 
   useEffect(() => {
-    const timers = prefs.reminders
+    const reminders = [...prefs.reminders, ...calendarReminders];
+    firedReminderKeysRef.current.forEach((key) => {
+      if (!reminders.some((reminder) => key.startsWith(`${reminder.id}:`))) {
+        firedReminderKeysRef.current.delete(key);
+      }
+    });
+
+    const timers = reminders
       .filter((reminder) => reminder.enabled)
       .flatMap((reminder) => {
         const startsAt = new Date(reminder.startsAt).getTime();
         if (Number.isNaN(startsAt)) return [];
 
+        const now = Date.now();
         const leadAt = startsAt - reminder.leadMinutes * 60_000;
-        const leadDelay = leadAt - Date.now();
+        const leadDelay = leadAt - now;
+        const leadReminderKey = `${reminder.id}:lead:${reminder.startsAt}:${reminder.leadMinutes}`;
         const reminderTimers: Array<number | undefined> = [
           leadDelay > 0 && leadDelay <= 2_147_483_647
             ? window.setTimeout(() => {
+              firedReminderKeysRef.current.add(leadReminderKey);
               const minutes = Math.max(1, Math.round((startsAt - Date.now()) / 60_000));
               const message = prefs.messageTemplate
                 .replaceAll('{title}', reminder.title)
@@ -183,11 +215,23 @@ function ReminderFlightOverlay() {
             : undefined,
         ];
 
+        if (leadDelay <= 0 && startsAt > now && !firedReminderKeysRef.current.has(leadReminderKey)) {
+          firedReminderKeysRef.current.add(leadReminderKey);
+          const minutes = Math.max(1, Math.round((startsAt - now) / 60_000));
+          const message = prefs.messageTemplate
+            .replaceAll('{title}', reminder.title)
+            .replaceAll('{minutes}', String(minutes));
+
+          window.requestAnimationFrame(() => startFlight(createReminderFlightRequest(prefs, message)));
+        }
+
         if (prefs.flyAtStart) {
-          const startDelay = startsAt - Date.now();
+          const startDelay = startsAt - now;
+          const startReminderKey = `${reminder.id}:start:${reminder.startsAt}`;
           reminderTimers.push(
             startDelay > 0 && startDelay <= 2_147_483_647
               ? window.setTimeout(() => {
+                firedReminderKeysRef.current.add(startReminderKey);
                 startFlight(createReminderFlightRequest(prefs, `${reminder.title} starting now`));
               }, startDelay)
               : undefined,
@@ -198,7 +242,39 @@ function ReminderFlightOverlay() {
       });
 
     return () => timers.forEach((timer) => timer && window.clearTimeout(timer));
-  }, [prefs, startFlight]);
+  }, [calendarReminders, prefs, startFlight]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const refreshCalendarReminders = () => {
+      const googleToken = prefs.googleCalendarConnected ? readGoogleCalendarToken() : null;
+      if (prefs.calendarLinks.length === 0 && !googleToken) {
+        setCalendarReminders([]);
+        return;
+      }
+
+      void Promise.all([
+        fetchCalendarReminders(prefs.calendarLinks, prefs.leadMinutes),
+        googleToken ? fetchGoogleCalendarReminders(googleToken.accessToken, prefs.leadMinutes) : Promise.resolve([]),
+      ])
+        .then(([feedReminders, googleReminders]) => {
+          const reminders = [...feedReminders, ...googleReminders];
+          if (!cancelled) setCalendarReminders(reminders);
+        })
+        .catch(() => {
+          if (!cancelled) setCalendarReminders([]);
+        });
+    };
+
+    refreshCalendarReminders();
+    const interval = window.setInterval(refreshCalendarReminders, 5 * 60_000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [prefs.calendarLinks, prefs.googleCalendarConnected, prefs.leadMinutes]);
 
   useEffect(() => {
     const onLocalFlight = (event: Event) => {
@@ -207,6 +283,10 @@ function ReminderFlightOverlay() {
     const onStorage = (event: StorageEvent) => {
       if (!event.newValue) return;
       if (event.key === REMINDERS_STORAGE_KEY) {
+        setPrefs(readPrefs());
+        return;
+      }
+      if (event.key === GOOGLE_CALENDAR_TOKEN_STORAGE_KEY) {
         setPrefs(readPrefs());
         return;
       }
@@ -221,6 +301,7 @@ function ReminderFlightOverlay() {
 
     window.addEventListener(REMINDER_FLIGHT_REQUEST_KEY, onLocalFlight);
     window.addEventListener(REMINDERS_STORAGE_KEY, onPrefsChanged);
+    window.addEventListener(GOOGLE_CALENDAR_TOKEN_STORAGE_KEY, onPrefsChanged);
     window.addEventListener('storage', onStorage);
 
     let unlisten: (() => void) | undefined;
@@ -233,49 +314,57 @@ function ReminderFlightOverlay() {
     }
 
     return () => {
-      window.clearTimeout(clearTimerRef.current);
+      clearTimerRefs.current.forEach((timer) => window.clearTimeout(timer));
+      clearTimerRefs.current.clear();
       window.removeEventListener(REMINDER_FLIGHT_REQUEST_KEY, onLocalFlight);
       window.removeEventListener(REMINDERS_STORAGE_KEY, onPrefsChanged);
+      window.removeEventListener(GOOGLE_CALENDAR_TOKEN_STORAGE_KEY, onPrefsChanged);
       window.removeEventListener('storage', onStorage);
       unlisten?.();
     };
   }, [startFlight]);
 
-  if (!flight) return null;
-
-  const { theme, head, color, font } = resolveReminderFlightAssets(flight);
+  if (flights.length === 0) return null;
 
   return (
     <div className="reminder-flight-overlay" aria-hidden="true">
       <BannerWaveFilter />
-      <div
-        key={flight.id}
-        className="reminder-flight-rig"
-        style={{
-          '--flight-duration': `${Math.max(2, flight.durationMs / 1000)}s`,
-          '--reminder-stripe-a': theme.a,
-          '--reminder-stripe-b': theme.b,
-          '--reminder-banner-text': theme.text,
-          '--reminder-banner-font': font.stack,
-          ...getReminderBannerSizeStyle(
-            (flight.bannerSize as ReminderBannerSize) ?? DEFAULT_REMINDER_PREFS.bannerSize,
-            'flight',
-            flight.message,
-          ),
-        } as CSSProperties}
-      >
-        <ReminderBanner
-          className="reminder-flight-banner"
-          message={flight.message}
-          layoutKey={`${flight.bannerSize}:${flight.message}:${font.id}`}
-        />
-        <div className="reminder-flight-rope" />
-        <div className="reminder-flight-aircraft">
-          <img key={color.id} className="reminder-flight-plane" src={color.base} alt="" />
-          <img key={head.id} className="reminder-flight-head" src={head.image} alt="" />
-          <img className="reminder-flight-blade" src={REMINDER_BLADE_URL} alt="" />
-        </div>
-      </div>
+      {flights.map(({ request, lane, startDelayMs }) => {
+        const { theme, head, color, font } = resolveReminderFlightAssets(request);
+
+        return (
+          <div
+            key={request.id}
+            className="reminder-flight-rig"
+            style={{
+              '--flight-duration': `${Math.max(2, request.durationMs / 1000)}s`,
+              '--flight-start-delay': `${startDelayMs}ms`,
+              '--flight-top': `${FLIGHT_LANES[lane]}%`,
+              '--reminder-stripe-a': theme.a,
+              '--reminder-stripe-b': theme.b,
+              '--reminder-banner-text': theme.text,
+              '--reminder-banner-font': font.stack,
+              ...getReminderBannerSizeStyle(
+                (request.bannerSize as ReminderBannerSize) ?? DEFAULT_REMINDER_PREFS.bannerSize,
+                'flight',
+                request.message,
+              ),
+            } as CSSProperties}
+          >
+            <ReminderBanner
+              className="reminder-flight-banner"
+              message={request.message}
+              layoutKey={`${request.bannerSize}:${request.message}:${font.id}`}
+            />
+            <div className="reminder-flight-rope" />
+            <div className="reminder-flight-aircraft">
+              <img key={color.id} className="reminder-flight-plane" src={color.base} alt="" />
+              <img key={head.id} className="reminder-flight-head" src={head.image} alt="" />
+              <img className="reminder-flight-blade" src={REMINDER_BLADE_URL} alt="" />
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

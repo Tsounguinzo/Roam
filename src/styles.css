@@ -798,14 +798,17 @@
 
     .reminder-flight-rig {
         --flight-duration: 9s;
+        --flight-start-delay: 0ms;
+        --flight-top: 20%;
         position: absolute;
-        top: 20%;
+        top: var(--flight-top);
         left: 0;
         display: flex;
         align-items: center;
         white-space: nowrap;
         transform: translateX(-130%);
-        animation: reminder-fly var(--flight-duration) linear forwards;
+        animation: reminder-fly var(--flight-duration) linear both;
+        animation-delay: var(--flight-start-delay);
         will-change: transform;
     }
 

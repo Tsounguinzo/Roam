@@ -8,7 +8,11 @@ import {
   TextInput,
 } from '@mantine/core';
 import {
+  IconBrandGoogle,
+  IconCalendarPlus,
   IconClock,
+  IconLink,
+  IconLogout,
   IconPlayerPlay,
   IconPlus,
   IconTrash,
@@ -31,6 +35,15 @@ import {
   type ReminderPrefs,
   type FlightReminder,
 } from './reminders/options';
+import {
+  GOOGLE_CALENDAR_TOKEN_STORAGE_KEY,
+  isGoogleCalendarDesktopOAuthConfigured,
+  isValidCalendarFeedUrl,
+  normalizeCalendarFeedUrl,
+  readGoogleCalendarToken,
+  requestGoogleCalendarToken,
+  revokeGoogleCalendarToken,
+} from './reminders/calendar';
 import {
   REMINDER_BLADE_URL,
   REMINDER_FLIGHT_REQUEST_KEY,
@@ -66,6 +79,12 @@ const reminderTimeLabel = (startsAt: string) => {
     hour: '2-digit',
     minute: '2-digit',
   });
+};
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return fallback;
 };
 
 function playTestSound(request: ReminderFlightRequest) {
@@ -159,6 +178,11 @@ function RemindersTab() {
   const [ownedItems, setOwnedItems] = useState<OwnedReminderItems>(readOwnedReminderItems);
   const [reminderTitle, setReminderTitle] = useState('Meeting');
   const [reminderStartsAt, setReminderStartsAt] = useState(() => formatDateTimeLocal(new Date(Date.now() + 30 * 60_000)));
+  const [calendarUrl, setCalendarUrl] = useState('');
+  const [calendarUrlError, setCalendarUrlError] = useState<string | null>(null);
+  const [googleAuthError, setGoogleAuthError] = useState<string | null>(null);
+  const [hasGoogleToken, setHasGoogleToken] = useState(() => Boolean(readGoogleCalendarToken()));
+  const [isGoogleCalendarConfigured, setIsGoogleCalendarConfigured] = useState(false);
   const [appearancePanel, setAppearancePanel] = useState<AppearancePanel>('avatar');
 
   const sendFlightRequest = useCallback((request: ReminderFlightRequest) => {
@@ -177,6 +201,21 @@ function RemindersTab() {
 
     window.addEventListener(REMINDER_OWNED_ITEMS_CHANGED, handleOwnedItemsChanged);
     return () => window.removeEventListener(REMINDER_OWNED_ITEMS_CHANGED, handleOwnedItemsChanged);
+  }, []);
+
+  useEffect(() => {
+    const updateGoogleTokenState = () => setHasGoogleToken(Boolean(readGoogleCalendarToken()));
+
+    window.addEventListener(GOOGLE_CALENDAR_TOKEN_STORAGE_KEY, updateGoogleTokenState);
+    window.addEventListener('storage', updateGoogleTokenState);
+    return () => {
+      window.removeEventListener(GOOGLE_CALENDAR_TOKEN_STORAGE_KEY, updateGoogleTokenState);
+      window.removeEventListener('storage', updateGoogleTokenState);
+    };
+  }, []);
+
+  useEffect(() => {
+    void isGoogleCalendarDesktopOAuthConfigured().then(setIsGoogleCalendarConfigured);
   }, []);
 
   const previewMessage = prefs.messageTemplate
@@ -244,6 +283,48 @@ function RemindersTab() {
       ...current,
       reminders: current.reminders.map((reminder) => (reminder.id === id ? { ...reminder, enabled } : reminder)),
     }));
+  }, []);
+
+  const addCalendarLink = useCallback(() => {
+    const normalizedUrl = normalizeCalendarFeedUrl(calendarUrl);
+
+    if (!isValidCalendarFeedUrl(normalizedUrl)) {
+      setCalendarUrlError('Paste an HTTPS iCal feed URL.');
+      return;
+    }
+
+    setPrefs((current) => {
+      if (current.calendarLinks.includes(normalizedUrl)) return current;
+      return { ...current, calendarLinks: [...current.calendarLinks, normalizedUrl] };
+    });
+    setCalendarUrl('');
+    setCalendarUrlError(null);
+  }, [calendarUrl]);
+
+  const removeCalendarLink = useCallback((link: string) => {
+    setPrefs((current) => ({
+      ...current,
+      calendarLinks: current.calendarLinks.filter((calendarLink) => calendarLink !== link),
+    }));
+  }, []);
+
+  const connectGoogleCalendar = useCallback(async () => {
+    setGoogleAuthError(null);
+
+    try {
+      await requestGoogleCalendarToken();
+      setHasGoogleToken(true);
+      setPrefs((current) => ({ ...current, googleCalendarConnected: true }));
+    } catch (error) {
+      setGoogleAuthError(getErrorMessage(error, 'Google sign-in was not completed.'));
+    }
+  }, []);
+
+  const disconnectGoogleCalendar = useCallback(async () => {
+    await revokeGoogleCalendarToken();
+    setHasGoogleToken(false);
+    setPrefs((current) => ({ ...current, googleCalendarConnected: false }));
+    setGoogleAuthError(null);
   }, []);
 
   const testFlight = useCallback(() => {
@@ -331,8 +412,87 @@ function RemindersTab() {
 
           <SectionCard
             title="Saved reminders"
-            description="Create local fly-by reminders until calendar sync is ready."
+            description="Create local fly-by reminders, connect Google Calendar, or add calendar feeds."
           >
+            <Box>
+              <Box className="flex items-start justify-between gap-4 max-[760px]:flex-col">
+                <Box>
+                  <Text className="font-note text-lg leading-none text-[var(--roam-ink)]">Google Calendar</Text>
+                  <Text className="mt-1 text-sm text-[var(--roam-muted)]">
+                    Sign in to read upcoming events from your primary Google Calendar.
+                  </Text>
+                  {googleAuthError && <Text className="mt-2 text-sm text-[var(--roam-muted)]">{googleAuthError}</Text>}
+                  {!isGoogleCalendarConfigured && (
+                    <Text className="mt-2 text-sm text-[var(--roam-muted)]">
+                      Set GOOGLE_CALENDAR_CLIENT_ID and GOOGLE_CALENDAR_CLIENT_SECRET to enable desktop Google sign-in.
+                    </Text>
+                  )}
+                </Box>
+                <Group gap="xs">
+                  {prefs.googleCalendarConnected && hasGoogleToken ? (
+                    <Button leftSection={<IconLogout size={16} />} onClick={disconnectGoogleCalendar}>
+                      Disconnect
+                    </Button>
+                  ) : (
+                    <Button
+                      disabled={!isGoogleCalendarConfigured}
+                      leftSection={<IconBrandGoogle size={16} />}
+                      onClick={connectGoogleCalendar}
+                    >
+                      Sign in
+                    </Button>
+                  )}
+                </Group>
+              </Box>
+            </Box>
+
+            <Box className="reminder-dashed-separator" />
+
+            <Box>
+              <Box>
+                <Text className="font-note text-lg leading-none text-[var(--roam-ink)]">Calendar feeds</Text>
+                <Text className="mt-1 text-sm text-[var(--roam-muted)]">
+                  Add any iCal feed URL from Google, Apple, Outlook, or another calendar provider.
+                </Text>
+              </Box>
+              <Box className="mt-4 grid grid-cols-[1fr_auto] gap-3 max-[860px]:grid-cols-1">
+                <TextInput
+                  label="iCal feed URL"
+                  placeholder="https://example.com/calendar.ics"
+                  value={calendarUrl}
+                  error={calendarUrlError}
+                  onChange={(event) => {
+                    setCalendarUrl(event.currentTarget.value);
+                    setCalendarUrlError(null);
+                  }}
+                />
+                <Button className="self-end max-[860px]:self-auto" leftSection={<IconLink size={16} />} onClick={addCalendarLink}>
+                  Add feed
+                </Button>
+              </Box>
+
+              <Box className="mt-3 flex flex-col gap-2">
+                {prefs.calendarLinks.length === 0 ? (
+                  <Text className="text-sm text-[var(--roam-muted)]">No calendar feeds connected.</Text>
+                ) : (
+                  prefs.calendarLinks.map((link) => (
+                    <Box
+                      key={link}
+                      className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[var(--roam-wobble-a)] border-2 border-solid border-[var(--roam-ink)] bg-[var(--roam-card)] px-3 py-2"
+                    >
+                      <IconCalendarPlus size={18} />
+                      <Text className="truncate text-sm text-[var(--roam-muted)]">{link}</Text>
+                      <ActionIcon variant="light" aria-label="Remove calendar feed" onClick={() => removeCalendarLink(link)}>
+                        <IconTrash size={16} />
+                      </ActionIcon>
+                    </Box>
+                  ))
+                )}
+              </Box>
+            </Box>
+
+            <Box className="reminder-dashed-separator" />
+
             <Box className="mt-4 grid grid-cols-[1fr_190px_auto] gap-3 max-[860px]:grid-cols-1">
               <TextInput label="Title" value={reminderTitle} onChange={(event) => setReminderTitle(event.currentTarget.value)} />
               <TextInput
