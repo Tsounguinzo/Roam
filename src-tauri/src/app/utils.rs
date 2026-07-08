@@ -21,6 +21,7 @@ fn apply_macos_all_spaces_behavior(window: &WebviewWindow) -> Result<(), String>
         & !NSWindowCollectionBehavior::FullScreenNone)
         | NSWindowCollectionBehavior::CanJoinAllSpaces
         | NSWindowCollectionBehavior::Auxiliary
+        | NSWindowCollectionBehavior::Stationary
         | NSWindowCollectionBehavior::Transient
         | NSWindowCollectionBehavior::IgnoresCycle
         | NSWindowCollectionBehavior::FullScreenAuxiliary;

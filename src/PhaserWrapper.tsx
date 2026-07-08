@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import Phaser from "phaser";
 import Pets from "./scenes/Pets";
 import { useSettingStore } from "./hooks/useSettingStore";
+import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import ReminderFlightOverlay from "./ui/reminders/ReminderFlightOverlay";
 const appWindow = getCurrentWebviewWindow()
@@ -17,11 +18,16 @@ function PhaserWrapper() {
         const handleResize = () => {
             gameRef.current?.scale.resize(window.innerWidth, window.innerHeight);
         };
+        const refreshOverlayWindow = () => {
+            void invoke("reopen_main_window").catch(() => undefined);
+        };
 
         window.addEventListener("resize", handleResize);
+        const overlayRefreshInterval = window.setInterval(refreshOverlayWindow, 3000);
 
         // ensure that if component remount user will still be able to touch their screen
         appWindow.setIgnoreCursorEvents(true);
+        refreshOverlayWindow();
 
         const phaserConfig: Phaser.Types.Core.GameConfig = {
             type: Phaser.AUTO,
@@ -66,6 +72,7 @@ function PhaserWrapper() {
             gameRef.current = null;
             if (phaserDom.current !== null) phaserDom.current.innerHTML = '';
             window.removeEventListener("resize", handleResize);
+            window.clearInterval(overlayRefreshInterval);
         }
 
     }, [pets]);
